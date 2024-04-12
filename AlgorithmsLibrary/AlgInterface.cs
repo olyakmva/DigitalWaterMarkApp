@@ -34,6 +34,5 @@ namespace AlgorithmsLibrary
         private double _remainingPercent;
 
         public double GhDistance { get; set; }
-        
     }
 }

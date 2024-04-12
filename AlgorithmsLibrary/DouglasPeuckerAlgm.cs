@@ -55,7 +55,7 @@ namespace AlgorithmsLibrary
             {
                 pair.End = endIndex - 1;
             }
-            
+
             indexes.Push(pair);
             chain[startIndex].Weight = weightUnremovingVertex;
             chain[pair.End ].Weight = weightUnremovingVertex;
@@ -127,7 +127,7 @@ namespace AlgorithmsLibrary
             }
             else if (start == 0 && last == vertices.Count - 1)
             {
-                
+
             }
             else
             {
@@ -140,7 +140,7 @@ namespace AlgorithmsLibrary
 
     public class DouglasPeuckerAlgm : DouglasPeuckerBaseAlgm
     {
-        
+
     }
     public class DouglasPeuckerAlgmWithCriterion : DouglasPeuckerBaseAlgm
     {

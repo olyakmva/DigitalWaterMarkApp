@@ -22,8 +22,8 @@
                     else algm = new SleeveFitAlgm();
                     break;
             }
-            return algm;
 
+            return algm;
         }
     }
 }

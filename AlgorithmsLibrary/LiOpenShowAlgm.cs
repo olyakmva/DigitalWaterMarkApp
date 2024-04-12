@@ -10,10 +10,10 @@ namespace AlgorithmsLibrary
         private double _cellSize;
         private double _shift;
         public SimplificationAlgmParameters Options { get; set; }
-        
+
         /// <summary>
         /// генерализация с помощью алгоритма Ли-Оупеншоу
-        /// На исходное множество линий накладывается регулярная сетка 
+        /// На исходное множество линий накладывается регулярная сетка
         /// (квадратная), вычисляются  точки пересечения исходных линий с сеткой.
         /// В результат помещаются середины отрезков от одной точки пересечения с сеткой до другой.
         /// Шаг сетки зависит от масштаба и соответствует минимально различимой детали (2 мм, например)
@@ -83,7 +83,7 @@ namespace AlgorithmsLibrary
                 vertices.Insert(i + 1, vertex);
                 endIndx++;
             }
-            // Ли-Оупеншоу 
+            // Ли-Оупеншоу
             double xmin, xmax, ymin, ymax;
             MinMaxValues.Compute(new List<MapPoint>(vertices), out xmin, out ymin, out xmax, out ymax);
             var outChain = new List<MapPoint>();
@@ -191,7 +191,7 @@ namespace AlgorithmsLibrary
             }
         }
 
-        
+
 
         public virtual void Run(MapData map)
         {

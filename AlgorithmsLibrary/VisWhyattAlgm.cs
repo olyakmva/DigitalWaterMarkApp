@@ -23,7 +23,7 @@ namespace AlgorithmsLibrary
         {
             if (endIndex - startIndex <= 2)
                 return;
-            
+
             LinkedList< MapPoint> list = new LinkedList<MapPoint>(chain);
             var heap = CreateHeap(chain, startIndex, endIndex);
             Process(heap, list);
@@ -32,7 +32,7 @@ namespace AlgorithmsLibrary
 
         protected virtual void Process(UniqueHeap<double, MapPoint> heap, LinkedList<MapPoint> list)
         {
-            var minWeightPoint = heap.GetMinElement(); 
+            var minWeightPoint = heap.GetMinElement();
             while (minWeightPoint.Key < Options.Tolerance)
             {
                 var point = minWeightPoint.Value;
@@ -51,7 +51,7 @@ namespace AlgorithmsLibrary
 
         protected UniqueHeap<double, MapPoint> CreateHeap(List<MapPoint> chain, int startIndex, int endIndex)
         {
-            IComparer<double> comparer = Comparer<double>.Default; 
+            IComparer<double> comparer = Comparer<double>.Default;
             UniqueHeap<double, MapPoint> heap = new UniqueHeap<double, MapPoint>(comparer, endIndex - startIndex);
 
             for (int i = startIndex + 1; i < endIndex; i++)
@@ -85,7 +85,7 @@ namespace AlgorithmsLibrary
             if(heap.Count==0)
                 return;
             heap.Remove(pNode.Value);
-            
+
             var prevNode = pNode.Previous;
             var nextNode = pNode.Next;
             if (prevNode == null || nextNode == null)
@@ -148,7 +148,7 @@ namespace AlgorithmsLibrary
             Process(lstHeaps, lstLists);
             int k = 0;
             foreach (var pair in map.MapObjDictionary)
-            {                
+            {
                 var chain = pair.Value;
                 int endIndex = chain.Count - 1;
                 int startIndex = 0;
@@ -156,7 +156,7 @@ namespace AlgorithmsLibrary
                     continue;
                 map.MapObjDictionary[pair.Key] = lstLists[k].ToList();
                 k++;
-            }        
+            }
         }
         private void Process(List<UniqueHeap<double, MapPoint>> heaps, List<LinkedList<MapPoint>> lists)
         {
@@ -177,7 +177,7 @@ namespace AlgorithmsLibrary
                 var point = minWeightPoint.Value;
                 heaps[index].ExtractMinElement();
                 var p = lists[index].Find(point);
-                
+
                 if (p == null)
                     throw new ArgumentNullException("Point not found in LinkedList " + point);
                 var nextPoint = p.Next;
@@ -244,11 +244,11 @@ namespace AlgorithmsLibrary
                 _criterion.GetParamByCriterion(Options);
                 tempMap = map.Clone();
             }
-           
-            
+
+
         }
 
     }
 
-    
+
 }
