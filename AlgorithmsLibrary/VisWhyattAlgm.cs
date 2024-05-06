@@ -1,4 +1,5 @@
-﻿using SupportLib;
+﻿using NetTopologySuite.Index.Bintree;
+using SupportLib;
 
 namespace AlgorithmsLibrary
 {
@@ -14,7 +15,7 @@ namespace AlgorithmsLibrary
                 var chain = pair.Value;
                 int endIndex = chain.Count - 1;
                 Run(ref chain, 0,  endIndex);
-                map.MapObjDictionary[pair.Key] = chain;
+                map.MapObjDictionary[pair.Key] = new KeyValuePair<int, List<MapPoint>>(pair.Key, chain);
             }
             Options.OutParam = Options.Tolerance;
         }
@@ -154,7 +155,7 @@ namespace AlgorithmsLibrary
                 int startIndex = 0;
                 if (endIndex - startIndex <= 2)
                     continue;
-                map.MapObjDictionary[pair.Key] = lstLists[k].ToList();
+                map.MapObjDictionary[pair.Key] = new KeyValuePair<int, List<MapPoint>>(pair.Key,  lstLists[k].ToList());
                 k++;
             }
         }

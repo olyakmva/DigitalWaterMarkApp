@@ -19,7 +19,7 @@ namespace SupportLib
             Ymax = Xmax;
             Colors.Init();
         }
-        
+
         public Map(List<MapData> mapLayers, double xmin, double ymin, double xmax, double ymax)
         {
             MapLayers = mapLayers;
@@ -29,7 +29,7 @@ namespace SupportLib
             Ymax = ymax;
             Colors.Init();
         }
-        
+
         void ComputeMinMaxValues(MapData mapData)
         {
             foreach (var pair in mapData.MapObjDictionary)
@@ -65,7 +65,10 @@ namespace SupportLib
         }
         public MapData GetObjById(int id)
         {
-            return MapLayers.Find(x => x.MapObjDictionary.ContainsKey(id));
+            var foundedMapData = MapLayers.Find(
+                x => x.MapObjDictionary.Any(x =>  x.Key.Equals(id))
+            ) ?? throw new NullReferenceException("Returned 'null' value");
+            return foundedMapData;
         }
 
         public IEnumerator<MapData> GetEnumerator()

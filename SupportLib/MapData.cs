@@ -2,12 +2,12 @@
 
 namespace SupportLib
 {
-    // Данные слоя карты. В списке хранятся точки на карте  
-    // слой одной геометрии 
+    // Данные слоя карты. В списке хранятся точки на карте
+    // слой одной геометрии
     [Serializable]
     public class MapData
     {
-        public Dictionary<int, List<MapPoint>> MapObjDictionary { get; set; }
+        public List<KeyValuePair<int, List<MapPoint>>> MapObjDictionary { get; set; }
         public string FileName { get; set; } = string.Empty;
         public int Count => GetAllVertices().Count;
         public string ColorName { get;  set; }
@@ -15,7 +15,7 @@ namespace SupportLib
 
         public MapData()
         {
-            MapObjDictionary = new Dictionary<int, List<MapPoint>>();
+            MapObjDictionary = new List<KeyValuePair<int, List<MapPoint>>>();
             ColorName = Colors.GetNext();
         }
 
@@ -33,7 +33,7 @@ namespace SupportLib
             }
             return resultList;
         }
-        
+
         public MapData Clone()
         {
             MapData clone;
@@ -48,7 +48,7 @@ namespace SupportLib
             }
             return clone;
         }
-        
+
         public void ClearWeights()
         {
             foreach (var chain in MapObjDictionary)
@@ -59,7 +59,7 @@ namespace SupportLib
                 }
             }
         }
-       
+
         public MapData MultiplyOffsetMapData(double offset = 0, double mul_offset = 1)
         {
             var result = new MapData();
@@ -81,7 +81,7 @@ namespace SupportLib
                     t.X = t.X * mul_offset + offset;
                     t.Y = t.Y * mul_offset + offset;
                 }
-                result.MapObjDictionary.Add(obj.Key, tmp);
+                result.MapObjDictionary.Add(new KeyValuePair<int, List<MapPoint>>(obj.Key, tmp));
             }
             return result;
         }

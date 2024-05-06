@@ -46,7 +46,7 @@ namespace SupportLib
                 }
                 else
                 {
-                    fid = Convert.ToInt32(shape.Attributes[0]);                  
+                    fid = Convert.ToInt32(shape.Attributes[0]);
                 }
                 var points = new List<MapPoint>();
                 for(var t=0; t< shape.Vertices.Length;t+=2)
@@ -54,13 +54,13 @@ namespace SupportLib
                     var p = new MapPoint(shape.Vertices[t], shape.Vertices[t+1], fid, 1.0);
                     points.Add(p);
                 }
-                map.MapObjDictionary.Add(fid, points);       
+                map.MapObjDictionary.Add(new KeyValuePair<int, List<MapPoint>>(fid, points));
             }
             return map;
         }
 
         public static IFeatureSet ToShape(MapData map)
-        {        
+        {
             FeatureType featureType = FeatureType.Unspecified;
             switch (map.Geometry)
             {
