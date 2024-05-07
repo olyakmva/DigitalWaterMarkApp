@@ -1,11 +1,12 @@
-﻿using System.Runtime.Serialization.Formatters.Binary;
+﻿using System.Collections;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace SupportLib
 {
     // Данные слоя карты. В списке хранятся точки на карте
     // слой одной геометрии
     [Serializable]
-    public class MapData
+    public class MapData : IEnumerable<KeyValuePair<int, List<MapPoint>>>
     {
         public List<KeyValuePair<int, List<MapPoint>>> MapObjDictionary { get; set; }
         public string FileName { get; set; } = string.Empty;
@@ -84,6 +85,19 @@ namespace SupportLib
                 result.MapObjDictionary.Add(new KeyValuePair<int, List<MapPoint>>(obj.Key, tmp));
             }
             return result;
+        }
+
+        public IEnumerator<KeyValuePair<int, List<MapPoint>>> GetEnumerator()
+        {
+            foreach (KeyValuePair<int, List<MapPoint>> mapObject in MapObjDictionary)
+            {
+                yield return mapObject;
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }
