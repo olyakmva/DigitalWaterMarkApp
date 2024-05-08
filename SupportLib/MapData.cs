@@ -87,6 +87,17 @@ namespace SupportLib
             return result;
         }
 
+        public List<MapPoint> this[int index]
+        {
+            get => this.MapObjDictionary[index].Value;
+            private set { }
+        }
+
+        public void SwapMapObjects(int firstMapObjectIndex, int secondMapObjectIndex) {
+            (this.MapObjDictionary[secondMapObjectIndex], this.MapObjDictionary[firstMapObjectIndex])
+                = (this.MapObjDictionary[firstMapObjectIndex], this.MapObjDictionary[secondMapObjectIndex]);
+        }
+
         public IEnumerator<KeyValuePair<int, List<MapPoint>>> GetEnumerator()
         {
             foreach (KeyValuePair<int, List<MapPoint>> mapObject in MapObjDictionary)

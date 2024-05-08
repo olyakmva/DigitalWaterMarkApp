@@ -3,18 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace DigitalWaterMarkApp.WaterMark
+namespace DigitalWaterMarkApp
 {
     /**
         Класс элемента водяного знака
     */
     public class WaterMarkItem : IComparable<WaterMarkItem>
     {
-        private byte wmValue;
+        private int wmValue;
         private int rowIdx;
         private int colIdx;
 
-        public byte WMValue {
+        public int WMValue {
             get => wmValue;
             set => wmValue = value;
         }

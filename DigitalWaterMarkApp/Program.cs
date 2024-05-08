@@ -1,20 +1,20 @@
 ﻿// Для пакетной обработки
 //using DotSpatial.Data;
-using DigitalWaterMarkApp.WaterMark;
+using DigitalWaterMarkApp;
 using SupportLib;
 
 class Program
 {
     public static void Main()
     {
-        // ShapeFileIO shapeFileIO = new();
-        // MapData mapData = shapeFileIO.Open("test1/BLKPOL1000YO.shp");
-        // List<KeyValuePair<int, List<MapPoint>>> objectList = mapData.MapObjDictionary;
+        ShapeFileIO shapeFileIO = new();
+        MapData mapData = shapeFileIO.Open("test1/BLKPOL1000YO.shp");
+        List<KeyValuePair<int, List<MapPoint>>> objectList = mapData.MapObjDictionary;
 
-        // foreach (var mapDataObject in mapData)
-        // {
-        //     Console.WriteLine(String.Format("Object key: {0}, vertices count {1}", mapDataObject.Key, mapDataObject.Value.Count));
-        // }
+        foreach (var mapDataObject in mapData)
+        {
+            Console.WriteLine(String.Format("Object key: {0}, vertices count {1}", mapDataObject.Key, mapDataObject.Value.Count));
+        }
 
         WaterMark waterMark = new(
             new List<WaterMarkItem>()
@@ -42,25 +42,15 @@ class Program
             4
         );
 
-        foreach (var item in waterMark)
+        waterMark.IterateKTransforms(2);
+
+        MapDataProcessor mapDataProcessor = new(waterMark);
+
+        var mapDataWithWaterMark = mapDataProcessor.WaterMarkEmbedding(mapData);
+
+        foreach (var mapDataObject in mapDataWithWaterMark)
         {
-            Console.WriteLine(item);
-        }
-        Console.WriteLine();
-
-        waterMark.NextIterateArnlodTransform();
-
-        foreach (var item in waterMark)
-        {
-            Console.WriteLine(item);
-        }
-        Console.WriteLine();
-
-        waterMark.PreviousIterateArnlodTransform();
-
-        foreach (var item in waterMark)
-        {
-            Console.WriteLine(item);
+            Console.WriteLine(String.Format("WM-Object key: {0}, vertices count {1}", mapDataObject.Key, mapDataObject.Value.Count));
         }
     }
 }

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace DigitalWaterMarkApp.WaterMark
+namespace DigitalWaterMarkApp
 {
     /**
         Класс водяного знака
@@ -67,6 +67,12 @@ namespace DigitalWaterMarkApp.WaterMark
             {
                 NextIterateArnlodTransform();
             }
+        }
+
+        public int this[int index]
+        {
+            get => this.Items[index].WMValue;
+            set => this.Items[index].WMValue = value;
         }
 
         public IEnumerator<WaterMarkItem> GetEnumerator()
