@@ -23,10 +23,12 @@ namespace DigitalWaterMarkApp
 
             for (int i = 0; i < mapData.MapObjDictionary.Count - 1; i++)
             {
-                var waterMarkEmddingItem = this.waterMark[GetHash(mapData[i].Count * mapData[i + 1].Count)];
+                var waterMarkEmbeddingItemIdx = GetHash(mapData[i].Count * mapData[i + 1].Count);
+                var waterMarkEmbeddingItem = this.waterMark[waterMarkEmbeddingItemIdx];
                 var storageDirection = GetMapObjectsStorageDirtection(mapData[i], mapData[i + 1]);
 
-                if (waterMarkEmddingItem != storageDirection) {
+                if (waterMarkEmbeddingItem != storageDirection) {
+                    mapData.DuplicatePointInObjectByIndexAtPosition(i, waterMarkEmbeddingItemIdx);
                     mapData.SwapMapObjects(i, i + 1);
                 }
             }
@@ -34,9 +36,36 @@ namespace DigitalWaterMarkApp
             return mapData;
         }
 
-        private int GetHash(int value) {
-            return value % 16;
+        public int[] WaterMarkExtracting(MapData mapData) {
+
+            Dictionary<int, List<int>> waterMarkValues = new();
+            for (int i = 0; i < mapData.MapObjDictionary.Count - 1; i++)
+            {
+                var waterMarkExtractionItemIdx = GetHash(mapData[i].Count * mapData[i + 1].Count);
+                var waterMarkExtractionItem = GetMapObjectsStorageDirtection(mapData[i], mapData[i + 1]);
+
+                if (waterMarkValues.ContainsKey(waterMarkExtractionItemIdx)) {
+                    waterMarkValues[waterMarkExtractionItemIdx].Add(waterMarkExtractionItem);
+                } else {
+                    waterMarkValues.Add(waterMarkExtractionItemIdx, new List<int>(waterMarkExtractionItem));
+                }
+            }
+
+            var maxIndex = waterMarkValues.Keys.Max();
+            var waterMarkBestVariation = Enumerable.Repeat(-1, maxIndex + 1).ToArray();
+            foreach (var wmKey in waterMarkValues.Keys)
+            {
+                var countOf_1 = waterMarkValues[wmKey].Count(item => item == 1);
+                var countOf_0 = waterMarkValues[wmKey].Count(item => item == 0);
+
+                if (countOf_1 > countOf_0) waterMarkBestVariation[wmKey] = 1;
+                else if (countOf_0 > countOf_1) waterMarkBestVariation[wmKey] = 0;
+            }
+
+            return waterMarkBestVariation;
         }
+
+        private int GetHash(int value) => value % 16;
 
         private int GetMapObjectsStorageDirtection(
             List<MapPoint> firstMapObject,

@@ -98,6 +98,27 @@ namespace SupportLib
                 = (this.MapObjDictionary[firstMapObjectIndex], this.MapObjDictionary[secondMapObjectIndex]);
         }
 
+        public void DuplicatePointInObjectByIndexAtPosition(int objectIndex, int waterMarkEmbeddingItemIdx) {
+            var mapObject = this.MapObjDictionary[objectIndex];
+            var mapObjectPoints = mapObject.Value;
+            var duplicatingPosition = waterMarkEmbeddingItemIdx % mapObjectPoints.Count;
+            mapObjectPoints.Insert(duplicatingPosition, mapObjectPoints[duplicatingPosition]);
+        }
+
+        public Object HasDuplicatedPoints(int objectIndex) {
+            var duplicates = this.MapObjDictionary[objectIndex].Value
+                .GroupBy(x => new { x.X, x.Y })
+                .Where(g => g.Count() > 1)
+                .Select(y => y.Key)
+                .ToList();
+
+            if (this.Geometry.Equals(GeometryType.Polygon)) {
+                return duplicates.Count > 1;
+            }
+
+            return duplicates.Count > 0;
+        }
+
         public IEnumerator<KeyValuePair<int, List<MapPoint>>> GetEnumerator()
         {
             foreach (KeyValuePair<int, List<MapPoint>> mapObject in MapObjDictionary)

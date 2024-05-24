@@ -1,10 +1,29 @@
-﻿// Для пакетной обработки
+﻿using System.Linq;
+// Для пакетной обработки
 //using DotSpatial.Data;
 using DigitalWaterMarkApp;
 using SupportLib;
 
 class Program
 {
+    public static void PrintWaterMark(WaterMark waterMark)
+    {
+        for (int i = 0; i < waterMark.Size * waterMark.Size; i++)
+        {
+            Console.Write(waterMark[i] + " ");
+        }
+        Console.WriteLine();
+    }
+
+    public static void PrintWaterMark(int[] waterMark)
+    {
+        for (int i = 0; i < waterMark.Length; i++)
+        {
+            Console.Write(waterMark[i] + " ");
+        }
+        Console.WriteLine();
+    }
+
     public static void Main()
     {
         ShapeFileIO shapeFileIO = new();
@@ -13,7 +32,7 @@ class Program
 
         foreach (var mapDataObject in mapData)
         {
-            Console.WriteLine(String.Format("Object key: {0}, vertices count {1}", mapDataObject.Key, mapDataObject.Value.Count));
+            Console.WriteLine(String.Format("WM-Object key: {0}, vertices count {1}, {2}", mapDataObject.Key, mapDataObject.Value.Count, mapData.HasDuplicatedPoints(mapDataObject.Key)));
         }
 
         WaterMark waterMark = new(
@@ -42,7 +61,13 @@ class Program
             4
         );
 
-        waterMark.IterateKTransforms(2);
+        Console.WriteLine("-------------------");
+
+        PrintWaterMark(waterMark);
+
+        Console.WriteLine("-------------------");
+
+        // waterMark.NextIterateArnlodTransform();
 
         MapDataProcessor mapDataProcessor = new(waterMark);
 
@@ -50,8 +75,13 @@ class Program
 
         foreach (var mapDataObject in mapDataWithWaterMark)
         {
-            Console.WriteLine(String.Format("WM-Object key: {0}, vertices count {1}", mapDataObject.Key, mapDataObject.Value.Count));
+            Console.WriteLine(String.Format("WM-Object key: {0}, vertices count {1}, {2}", mapDataObject.Key, mapDataObject.Value.Count, mapDataWithWaterMark.HasDuplicatedPoints(mapDataObject.Key)));
         }
+
+        Console.WriteLine("-------------------");
+
+        var extractedWM = mapDataProcessor.WaterMarkExtracting(mapData);
+        PrintWaterMark(extractedWM);
     }
 }
 
