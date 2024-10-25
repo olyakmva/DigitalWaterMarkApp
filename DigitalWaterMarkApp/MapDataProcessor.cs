@@ -10,6 +10,12 @@ namespace DigitalWaterMarkApp
     {
         private WaterMark waterMark;
 
+        private static int A = 12;
+        private static int B = 72;
+
+        private static int P = 17;
+        private static int M = 9;
+
         public WaterMark WaterMark {
             get => waterMark;
             set => waterMark = value;
@@ -65,7 +71,7 @@ namespace DigitalWaterMarkApp
             return waterMarkBestVariation;
         }
 
-        private int GetHash(int value) => value % 16;
+        private int GetHash(int value) => ((A * value + B) % P) % M;
 
         private int GetMapObjectsStorageDirtection(
             List<MapPoint> firstMapObject,
