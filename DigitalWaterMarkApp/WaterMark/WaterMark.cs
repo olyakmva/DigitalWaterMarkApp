@@ -21,6 +21,10 @@ namespace DigitalWaterMarkApp
             set => size = value;
         }
 
+        public int Length {
+            get => size * size;
+        }
+
         public List<WaterMarkItem> Items {
             get => items;
             set => items = value;
