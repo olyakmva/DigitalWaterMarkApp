@@ -106,7 +106,7 @@ namespace SupportLib
         }
 
         public Object HasDuplicatedPoints(int objectIndex) {
-            var duplicates = this.MapObjDictionary[objectIndex].Value
+            var duplicates = this.MapObjDictionary[objectIndex - 1].Value
                 .GroupBy(x => new { x.X, x.Y })
                 .Where(g => g.Count() > 1)
                 .Select(y => y.Key)
