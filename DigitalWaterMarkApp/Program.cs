@@ -24,56 +24,56 @@ class Program
         Console.WriteLine();
     }
 
+    public static int[] getBinaryFromInteger(int length, int toBase, int number) {
+        var source = Convert.ToString(number, toBase).PadLeft(length, '0');
+        return source.Select(c => c - '0').ToArray();
+    }
+
+    public static WaterMark getWaterMark(int size, int number) {
+
+        int[] binary = getBinaryFromInteger(size * size, 2, number);
+        List<WaterMarkItem> items = new List<WaterMarkItem>();
+
+        int currentItem = 0;
+        for (int i = 0; i < size; i++)
+        {
+            for (int j = 0; j < size; j++) {
+                items.Add(new WaterMarkItem(binary[currentItem], i, j));
+                currentItem++;
+            }
+        }
+
+        return new WaterMark(items, size);
+    }
+
     public static void Main()
     {
+        /**
+        * rivers1000k.shp
+        * rlhlin1000.shp
+        */
+
         ShapeFileIO shapeFileIO = new();
-        MapData mapData = shapeFileIO.Open("argentina/argentina_Province_level_1.shp");
+        MapData mapData = shapeFileIO.Open("test1/rlhlin1000.shp");
         List<KeyValuePair<int, List<MapPoint>>> objectList = mapData.MapObjDictionary;
 
-        foreach (var mapDataObject in mapData)
+        // foreach (var mapDataObject in mapData)
+        // {
+        //     Console.WriteLine(String.Format("WM-Object key: {0}, vertices count {1}, {2}", mapDataObject.Key, mapDataObject.Value.Count, mapData.HasDuplicatedPoints(mapDataObject.Key)));
+        // }
+
+        for (int i = 0; i < 16; i++)
         {
-            Console.WriteLine(String.Format("WM-Object key: {0}, vertices count {1}, {2}", mapDataObject.Key, mapDataObject.Value.Count, mapData.HasDuplicatedPoints(mapDataObject.Key)));
+            WaterMark waterMark = getWaterMark(2, i);
+            PrintWaterMark(waterMark);
+
+            MapDataProcessor mapDataProcessor = new(waterMark);
+            var mapDataWithWaterMark = mapDataProcessor.WaterMarkEmbedding(mapData);
+            var extractedWM = mapDataProcessor.WaterMarkExtracting(mapDataWithWaterMark);
+            PrintWaterMark(extractedWM);
+
+            Console.WriteLine("-------------------");
         }
-
-        WaterMark waterMark = new(
-            new List<WaterMarkItem>()
-            {
-                new(1, 1, 1),
-                new(1, 1, 2),
-                new(1, 1, 3),
-
-                new(1, 2, 1),
-                new(1, 2, 2),
-                new(0, 2, 3),
-
-                new(0, 3, 1),
-                new(1, 3, 2),
-                new(1, 3, 3),
-            },
-            3
-        );
-
-        Console.WriteLine("-------------------");
-
-        PrintWaterMark(waterMark);
-
-        Console.WriteLine("-------------------");
-
-        // waterMark.NextIterateArnlodTransform();
-
-        MapDataProcessor mapDataProcessor = new(waterMark);
-
-        var mapDataWithWaterMark = mapDataProcessor.WaterMarkEmbedding(mapData);
-
-        foreach (var mapDataObject in mapDataWithWaterMark)
-        {
-            Console.WriteLine(String.Format("WM-Object key: {0}, vertices count {1}, {2}", mapDataObject.Key, mapDataObject.Value.Count, mapDataWithWaterMark.HasDuplicatedPoints(mapDataObject.Key)));
-        }
-
-        Console.WriteLine("-------------------");
-
-        var extractedWM = mapDataProcessor.WaterMarkExtracting(mapData);
-        PrintWaterMark(extractedWM);
     }
 }
 

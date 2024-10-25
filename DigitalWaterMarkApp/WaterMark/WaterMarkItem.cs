@@ -30,7 +30,7 @@ namespace DigitalWaterMarkApp
         }
 
         public WaterMarkItem(
-            byte Value,
+            int Value,
             int RowIdx,
             int ColIdx
         ) {

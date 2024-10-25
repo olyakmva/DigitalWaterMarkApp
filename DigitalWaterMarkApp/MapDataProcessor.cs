@@ -10,11 +10,13 @@ namespace DigitalWaterMarkApp
     {
         private WaterMark waterMark;
 
-        private static int A = 12;
-        private static int B = 72;
+        // rlhlin1000.shp A=61 B=54 P=11 M=9
 
-        private static int P = 17;
-        private static int M = 9;
+        private static int A = 61;
+        private static int B = 54;
+
+        private static int P = 11;
+        private static int M = 4;
 
         public WaterMark WaterMark {
             get => waterMark;
