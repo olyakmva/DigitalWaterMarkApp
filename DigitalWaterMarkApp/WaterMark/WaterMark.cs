@@ -73,6 +73,43 @@ namespace DigitalWaterMarkApp
             }
         }
 
+        private static int[] GetBinaryFromInteger(int length, int toBase, int number) {
+            var source = ConvertToBase(number, toBase).PadLeft(length, '0');
+            return source.Select(c => c - '0').ToArray();
+        }
+
+        public static String ConvertToBase(int value, int toBase) => Convert.ToString(value, toBase);
+
+        public int ConvertToDecimal() => Convert.ToInt32(string.Join("", this.Items.Select(item => item.WMValue)), 2);
+
+        public static WaterMark ConvertToWaterMark(int value) {
+
+
+            int binaryLength = ConvertToBase(value, 2).Length;
+
+            int size = 0;
+            for (int i = 1; i < 100; i++) {
+                if (binaryLength <= i * i) {
+                    size = i;
+                    break;
+                }
+            }
+
+            int[] binary = GetBinaryFromInteger(size * size, 2, value);
+            List<WaterMarkItem> items = new();
+
+            int currentItem = 0;
+            for (int i = 0; i < size; i++)
+            {
+                for (int j = 0; j < size; j++) {
+                    items.Add(new WaterMarkItem(binary[currentItem], i, j));
+                    currentItem++;
+                }
+            }
+
+            return new WaterMark(items, size);
+        }
+
         public int this[int index]
         {
             get => this.Items[index].WMValue;

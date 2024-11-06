@@ -89,9 +89,15 @@ namespace SupportLib
 
         public List<MapPoint> this[int index]
         {
-            get => this.MapObjDictionary[index].Value;
-            private set { }
+            get => this.MapObjDictionary.First(kvp => kvp.Key == index).Value;
+            set {
+                int idx = this.MapObjDictionary.FindIndex(kvp => kvp.Key == index);
+                this.MapObjDictionary[idx] = new KeyValuePair<int, List<MapPoint>>(this.MapObjDictionary[index].Key, value);
+            }
         }
+
+        public List<MapPoint> First() => this.MapObjDictionary[0].Value;
+        public int FirstObjectId() => this.MapObjDictionary[0].Key;
 
         public void SwapMapObjects(int firstMapObjectIndex, int secondMapObjectIndex) {
             (this.MapObjDictionary[secondMapObjectIndex], this.MapObjDictionary[firstMapObjectIndex])

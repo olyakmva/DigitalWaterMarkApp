@@ -24,28 +24,6 @@ class Program
         Console.WriteLine();
     }
 
-    public static int[] getBinaryFromInteger(int length, int toBase, int number) {
-        var source = Convert.ToString(number, toBase).PadLeft(length, '0');
-        return source.Select(c => c - '0').ToArray();
-    }
-
-    public static WaterMark getWaterMark(int size, int number) {
-
-        int[] binary = getBinaryFromInteger(size * size, 2, number);
-        List<WaterMarkItem> items = new List<WaterMarkItem>();
-
-        int currentItem = 0;
-        for (int i = 0; i < size; i++)
-        {
-            for (int j = 0; j < size; j++) {
-                items.Add(new WaterMarkItem(binary[currentItem], i, j));
-                currentItem++;
-            }
-        }
-
-        return new WaterMark(items, size);
-    }
-
     public static void Main()
     {
         /**
@@ -54,7 +32,7 @@ class Program
         */
 
         ShapeFileIO shapeFileIO = new();
-        MapData mapData = shapeFileIO.Open("test1/rlhlin1000.shp");
+        MapData mapData = shapeFileIO.Open("test1/rivers1000k.shp");
         List<KeyValuePair<int, List<MapPoint>>> objectList = mapData.MapObjDictionary;
 
         // foreach (var mapDataObject in mapData)
@@ -62,14 +40,16 @@ class Program
         //     Console.WriteLine(String.Format("WM-Object key: {0}, vertices count {1}, {2}", mapDataObject.Key, mapDataObject.Value.Count, mapData.HasDuplicatedPoints(mapDataObject.Key)));
         // }
 
-        for (int i = 0; i < 16; i++)
+        for (int i = 2; i < 12; i++)
         {
-            WaterMark waterMark = getWaterMark(2, i);
+            WaterMark waterMark = WaterMark.ConvertToWaterMark(i);
             PrintWaterMark(waterMark);
 
             MapDataProcessor mapDataProcessor = new(waterMark);
+            mapDataProcessor.LoopDuplicatingPointsInLayers(mapData);
+
             var mapDataWithWaterMark = mapDataProcessor.WaterMarkEmbedding(mapData);
-            var extractedWM = mapDataProcessor.WaterMarkExtracting(mapDataWithWaterMark);
+            var extractedWM = MapDataProcessor.WaterMarkExtracting(mapDataWithWaterMark);
             PrintWaterMark(extractedWM);
 
             Console.WriteLine("-------------------");

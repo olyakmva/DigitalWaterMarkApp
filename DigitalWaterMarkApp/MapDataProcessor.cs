@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Numerics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,11 +14,11 @@ namespace DigitalWaterMarkApp
 
         // rlhlin1000.shp A=61 B=54 P=11 M=9
 
-        private static int A = 61;
-        private static int B = 54;
+        private static BigInteger A = 35;
+        private static BigInteger B = 84;
 
-        private static int P = 11;
-        private static int M = 4;
+        private static BigInteger P = 95;
+        private static BigInteger M = 4;
 
         public WaterMark WaterMark {
             get => waterMark;
@@ -31,9 +33,9 @@ namespace DigitalWaterMarkApp
 
             for (int i = 0; i < mapData.MapObjDictionary.Count - 1; i++)
             {
-                var waterMarkEmbeddingItemIdx = GetHash(mapData[i].Count * mapData[i + 1].Count);
+                var waterMarkEmbeddingItemIdx = GetHash(mapData.MapObjDictionary[i].Value.Count * mapData.MapObjDictionary[i + 1].Value.Count);
                 var waterMarkEmbeddingItem = this.waterMark[waterMarkEmbeddingItemIdx];
-                var storageDirection = GetMapObjectsStorageDirtection(mapData[i], mapData[i + 1]);
+                var storageDirection = GetMapObjectsStorageDirtection(mapData.MapObjDictionary[i].Value, mapData.MapObjDictionary[i + 1].Value);
 
                 if (waterMarkEmbeddingItem != storageDirection) {
                     mapData.DuplicatePointInObjectByIndexAtPosition(i, waterMarkEmbeddingItemIdx);
@@ -44,13 +46,13 @@ namespace DigitalWaterMarkApp
             return mapData;
         }
 
-        public int[] WaterMarkExtracting(MapData mapData) {
+        public static int[] WaterMarkExtracting(MapData mapData) {
 
             Dictionary<int, List<int>> waterMarkValues = new();
             for (int i = 0; i < mapData.MapObjDictionary.Count - 1; i++)
             {
-                var waterMarkExtractionItemIdx = GetHash(mapData[i].Count * mapData[i + 1].Count);
-                var waterMarkExtractionItem = GetMapObjectsStorageDirtection(mapData[i], mapData[i + 1]);
+                var waterMarkExtractionItemIdx = GetHash(mapData.MapObjDictionary[i].Value.Count * mapData.MapObjDictionary[i + 1].Value.Count);
+                var waterMarkExtractionItem = GetMapObjectsStorageDirtection(mapData.MapObjDictionary[i].Value, mapData.MapObjDictionary[i + 1].Value);
 
                 if (waterMarkValues.ContainsKey(waterMarkExtractionItemIdx)) {
                     waterMarkValues[waterMarkExtractionItemIdx].Add(waterMarkExtractionItem);
@@ -73,9 +75,38 @@ namespace DigitalWaterMarkApp
             return waterMarkBestVariation;
         }
 
-        private int GetHash(int value) => ((A * value + B) % P) % M;
+        private static void LoopDuplicatingPointsAtIndex(int position, int objectId, MapData mapData) {
 
-        private int GetMapObjectsStorageDirtection(
+            if (position == 0) {
+                return;
+            }
+
+            int[] positionsForDuplicating = new int[mapData[objectId].Count / position];
+            int currentIndex = 0;
+            for (int i = position; i < mapData[objectId].Count + currentIndex && currentIndex < positionsForDuplicating.Length; i += position) {
+                positionsForDuplicating[currentIndex] = i - 1 + currentIndex++;
+            }
+
+            for (int i = 0; i < positionsForDuplicating.Length; i++) {
+                mapData[objectId].Insert(positionsForDuplicating[i], mapData[objectId][positionsForDuplicating[i]]);
+            }
+        }
+
+        public void LoopDuplicatingPointsInLayers(MapData mapData) {
+            foreach (var mapObject in mapData) {
+                int objectId = mapObject.Key;
+                int countPointsInObject = mapObject.Value.Count;
+                int wmDecimal = this.waterMark.ConvertToDecimal();
+
+                int periodAsPosition = countPointsInObject % wmDecimal;
+                LoopDuplicatingPointsAtIndex(periodAsPosition, objectId, mapData);
+                Console.WriteLine(String.Format("Result of looping for object {0}: before {1} after {2}", objectId, countPointsInObject, mapData[objectId].Count));
+            }
+        }
+
+        private static int GetHash(int value) => (int) (((A * value + B) % P) % M);
+
+        private static int GetMapObjectsStorageDirtection(
             List<MapPoint> firstMapObject,
             List<MapPoint> secondMapObject
         ) {
