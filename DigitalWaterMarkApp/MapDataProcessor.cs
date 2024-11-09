@@ -18,7 +18,6 @@ namespace DigitalWaterMarkApp
         private static BigInteger B = 84;
 
         private static BigInteger P = 95;
-        private static BigInteger M = 4;
 
         public WaterMark WaterMark {
             get => waterMark;
@@ -33,7 +32,7 @@ namespace DigitalWaterMarkApp
 
             for (int i = 0; i < mapData.MapObjDictionary.Count - 1; i++)
             {
-                var waterMarkEmbeddingItemIdx = GetHash(mapData.MapObjDictionary[i].Value.Count * mapData.MapObjDictionary[i + 1].Value.Count);
+                var waterMarkEmbeddingItemIdx = GetHash(mapData.MapObjDictionary[i].Value.Count * mapData.MapObjDictionary[i + 1].Value.Count, this.WaterMark.Length);
                 var waterMarkEmbeddingItem = this.waterMark[waterMarkEmbeddingItemIdx];
                 var storageDirection = GetMapObjectsStorageDirtection(mapData.MapObjDictionary[i].Value, mapData.MapObjDictionary[i + 1].Value);
 
@@ -46,12 +45,12 @@ namespace DigitalWaterMarkApp
             return mapData;
         }
 
-        public static int[] WaterMarkExtracting(MapData mapData) {
+        public static int[] WaterMarkExtracting(MapData mapData, int waterMarkLength) {
 
             Dictionary<int, List<int>> waterMarkValues = new();
             for (int i = 0; i < mapData.MapObjDictionary.Count - 1; i++)
             {
-                var waterMarkExtractionItemIdx = GetHash(mapData.MapObjDictionary[i].Value.Count * mapData.MapObjDictionary[i + 1].Value.Count);
+                var waterMarkExtractionItemIdx = GetHash(mapData.MapObjDictionary[i].Value.Count * mapData.MapObjDictionary[i + 1].Value.Count, waterMarkLength);
                 var waterMarkExtractionItem = GetMapObjectsStorageDirtection(mapData.MapObjDictionary[i].Value, mapData.MapObjDictionary[i + 1].Value);
 
                 if (waterMarkValues.ContainsKey(waterMarkExtractionItemIdx)) {
@@ -104,7 +103,7 @@ namespace DigitalWaterMarkApp
             }
         }
 
-        private static int GetHash(int value) => (int) (((A * value + B) % P) % M);
+        private static int GetHash(int value, int waterMarkLength) => (int) (((A * value + B) % P) % waterMarkLength);
 
         private static int GetMapObjectsStorageDirtection(
             List<MapPoint> firstMapObject,

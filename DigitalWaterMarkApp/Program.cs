@@ -40,7 +40,7 @@ class Program
         //     Console.WriteLine(String.Format("WM-Object key: {0}, vertices count {1}, {2}", mapDataObject.Key, mapDataObject.Value.Count, mapData.HasDuplicatedPoints(mapDataObject.Key)));
         // }
 
-        for (int i = 2; i < 12; i++)
+        for (int i = 30; i < 31; i++)
         {
             WaterMark waterMark = WaterMark.ConvertToWaterMark(i);
             PrintWaterMark(waterMark);
@@ -49,7 +49,7 @@ class Program
             mapDataProcessor.LoopDuplicatingPointsInLayers(mapData);
 
             var mapDataWithWaterMark = mapDataProcessor.WaterMarkEmbedding(mapData);
-            var extractedWM = MapDataProcessor.WaterMarkExtracting(mapDataWithWaterMark);
+            var extractedWM = MapDataProcessor.WaterMarkExtracting(mapDataWithWaterMark, waterMark.Length);
             PrintWaterMark(extractedWM);
 
             Console.WriteLine("-------------------");
