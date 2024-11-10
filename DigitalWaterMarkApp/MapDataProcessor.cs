@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using SupportLib;
+using System.Net.Mail;
 
 namespace DigitalWaterMarkApp
 {
@@ -74,6 +75,24 @@ namespace DigitalWaterMarkApp
             return waterMarkBestVariation;
         }
 
+        private static int MaxPossibleWaterMarkValue(MapData mapData) {
+            var maximumPossibleWMvalue = -1;
+
+            foreach (var mapObject in mapData) {
+                int objectId = mapObject.Key;
+                int countPointsInObject = mapObject.Value.Count;
+
+                if (countPointsInObject > maximumPossibleWMvalue) {
+                    maximumPossibleWMvalue = countPointsInObject;
+                }
+            }
+
+            maximumPossibleWMvalue -= 2;
+
+            Console.WriteLine(String.Format("Max possible watermark value: {0}", maximumPossibleWMvalue));
+            return maximumPossibleWMvalue;
+        }
+
         private static void LoopDuplicatingPointsAtIndex(int position, int objectId, MapData mapData) {
 
             if (position == 0) {
@@ -92,22 +111,22 @@ namespace DigitalWaterMarkApp
         }
 
         public void LoopDuplicatingPointsInLayers(MapData mapData) {
-            var maximumPossibleWMvalue = -1;
+            var maximumPossibleWMvalue = MaxPossibleWaterMarkValue(mapData);
+            int wmDecimal = this.waterMark.ConvertToDecimal();
+
             foreach (var mapObject in mapData) {
                 int objectId = mapObject.Key;
                 int countPointsInObject = mapObject.Value.Count;
-                int wmDecimal = this.waterMark.ConvertToDecimal();
 
-                int periodAsPosition = countPointsInObject % wmDecimal;
-
-                if (periodAsPosition > 0 && periodAsPosition > maximumPossibleWMvalue) {
-                    maximumPossibleWMvalue = periodAsPosition;
+                int periodAsPosition;
+                if (wmDecimal > maximumPossibleWMvalue) {
+                    periodAsPosition = wmDecimal % countPointsInObject;
+                } else {
+                    periodAsPosition = countPointsInObject % wmDecimal;
                 }
 
                 LoopDuplicatingPointsAtIndex(periodAsPosition, objectId, mapData);
-                // Console.WriteLine(String.Format("Result of looping for object {0}: before {1} after {2}", objectId, countPointsInObject, mapData[objectId].Count));
             }
-            Console.WriteLine(String.Format("Maximum possible WM value {0}", maximumPossibleWMvalue));
         }
 
         private static List<int> FindLoopingPositionsInLayer(int objectId, MapData mapData) {
@@ -126,23 +145,32 @@ namespace DigitalWaterMarkApp
             return duplicatingIndexes;
         }
 
-        private static int FindDifferenceForLooping(int objectId, MapData mapData) {
+        private static (int loopingPosition, int countPointsBeforeLooping) FindEquationPropsForLayer(int objectId, MapData mapData) {
             var loopingIndexes = FindLoopingPositionsInLayer(objectId, mapData);
             var countPointsBeforeLooping = mapData[objectId].Count - loopingIndexes.Count;
 
             if (loopingIndexes.Count == 0) {
-                return -1;
+                return (-1, -1);
             }
 
             var loopingPosition = loopingIndexes[0] + 1;
 
             if (loopingPosition == 1) {
+                return (-1, -1);
+            }
+
+            return (loopingPosition, countPointsBeforeLooping);
+        }
+
+        private static int FindDifferenceForLooping(int objectId, MapData mapData) {
+
+            var props = FindEquationPropsForLayer(objectId, mapData);
+
+            if (Math.Min(props.loopingPosition, props.countPointsBeforeLooping) == -1) {
                 return -1;
             }
 
-            // Console.WriteLine(String.Format("Current quiv: {0}(mod X)={1}", countPointsBeforeLooping, loopingPosition));
-
-            return countPointsBeforeLooping - loopingPosition;
+            return props.countPointsBeforeLooping - props.loopingPosition;
         }
 
         private static List<int> FindAllDifferencesInLayers(MapData mapData) {
@@ -183,9 +211,68 @@ namespace DigitalWaterMarkApp
             return gcdResult;
         }
 
+        private static long Product(int[] A)
+        {
+            long product = 1;
+            foreach (int a in A)
+            {
+                product *= a;
+            }
+            return product;
+        }
+
+        private static long ChineseRemainderTheorem(int[] A, int[] B)
+        {
+            if (A.Length != B.Length)
+                throw new ArgumentException("The lengths of A and B must be the same.");
+
+            long M = Product(A);
+            long x = 0;
+
+            for (int i = 0; i < A.Length; i++)
+            {
+                long ai = A[i];
+                long bi = B[i];
+                long Mi = M / ai;
+                long yi = ModularInverse(Mi, ai);
+
+                x += bi * Mi * yi;
+            }
+
+            return x % M;
+        }
+
+        private static long ModularInverse(long a, long m)
+        {
+            a %= m;
+            for (long x = 1; x < m; x++)
+            {
+                if ((a * x) % m == 1)
+                    return x;
+            }
+
+            throw new Exception("Modular inverse does not exist.");
+        }
+
         public static WaterMark FindWMDecimalFromLoopingsInMapData(MapData mapData) {
-            List<int> loopingDifferences = FindAllDifferencesInLayers(mapData);
-            return WaterMark.ConvertToWaterMark(GCDOfList(loopingDifferences));
+            // В случае MaxPossibleWaterMarkValue > WM_10
+            // Решение системы вида:
+            // A_{0} mod x ≡ B_{0}
+            // A_{1} mod x ≡ B_{1}
+            // ...
+            // A_{n} mod x ≡ B_{n}
+            int WMViaDifferences = GCDOfList(FindAllDifferencesInLayers(mapData));
+
+            // В случае MaxPossibleWaterMarkValue < WM_10
+            // x mod A_{0} ≡ B_{0}
+            // x mod A_{1} ≡ B_{1}
+            // ...
+            // x mod A_{n} ≡ B_{n}
+            if (WMViaDifferences == 1) {
+                // TODO: применение китайской теоремы об остатках
+            }
+
+            return WaterMark.ConvertToWaterMark(WMViaDifferences);
         }
 
         private static int GetHash(int value, int waterMarkLength) => (int) (((A * value + B) % P) % waterMarkLength);

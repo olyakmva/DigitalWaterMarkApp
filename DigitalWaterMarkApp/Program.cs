@@ -40,27 +40,25 @@ class Program
         //     Console.WriteLine(String.Format("WM-Object key: {0}, vertices count {1}, {2}", mapDataObject.Key, mapDataObject.Value.Count, mapData.HasDuplicatedPoints(mapDataObject.Key)));
         // }
 
-        for (int i = 88; i < 89; i++)
-        {
-            Console.WriteLine("-------- ↓ ORIGINAL ↓ -----------");
-            WaterMark waterMark = WaterMark.ConvertToWaterMark(i);
-            PrintWaterMark(waterMark);
+        int test = 113;
 
-            MapDataProcessor mapDataProcessor = new(waterMark);
-            mapDataProcessor.LoopDuplicatingPointsInLayers(mapData);
+        Console.WriteLine("-------- ↓ ORIGINAL ↓ -----------");
+        WaterMark waterMark = WaterMark.ConvertToWaterMark(test);
+        PrintWaterMark(waterMark);
 
-            Console.WriteLine("-------- ↓ FROM LOOPING ↓ -----------");
+        MapDataProcessor mapDataProcessor = new(waterMark);
+        mapDataProcessor.LoopDuplicatingPointsInLayers(mapData);
 
-            var waterMarkFromLooping = MapDataProcessor.FindWMDecimalFromLoopingsInMapData(mapData);
-            PrintWaterMark(waterMarkFromLooping);
+        Console.WriteLine("-------- ↓ FROM LOOPING ↓ -----------");
 
-            Console.WriteLine("-------- ↓ FROM EXTRACTED ↓ -----------");
+        var waterMarkFromLooping = MapDataProcessor.FindWMDecimalFromLoopingsInMapData(mapData);
+        PrintWaterMark(waterMarkFromLooping);
 
-            var mapDataWithWaterMark = mapDataProcessor.WaterMarkEmbedding(mapData);
-            var extractedWM = MapDataProcessor.WaterMarkExtracting(mapDataWithWaterMark, waterMark.Length);
-            PrintWaterMark(extractedWM);
+        Console.WriteLine("-------- ↓ FROM EXTRACTED ↓ -----------");
 
-        }
+        var mapDataWithWaterMark = mapDataProcessor.WaterMarkEmbedding(mapData);
+        var extractedWM = MapDataProcessor.WaterMarkExtracting(mapDataWithWaterMark, waterMark.Length);
+        PrintWaterMark(extractedWM);
     }
 }
 
