@@ -92,15 +92,100 @@ namespace DigitalWaterMarkApp
         }
 
         public void LoopDuplicatingPointsInLayers(MapData mapData) {
+            var maximumPossibleWMvalue = -1;
             foreach (var mapObject in mapData) {
                 int objectId = mapObject.Key;
                 int countPointsInObject = mapObject.Value.Count;
                 int wmDecimal = this.waterMark.ConvertToDecimal();
 
                 int periodAsPosition = countPointsInObject % wmDecimal;
+
+                if (periodAsPosition > 0 && periodAsPosition > maximumPossibleWMvalue) {
+                    maximumPossibleWMvalue = periodAsPosition;
+                }
+
                 LoopDuplicatingPointsAtIndex(periodAsPosition, objectId, mapData);
-                Console.WriteLine(String.Format("Result of looping for object {0}: before {1} after {2}", objectId, countPointsInObject, mapData[objectId].Count));
+                // Console.WriteLine(String.Format("Result of looping for object {0}: before {1} after {2}", objectId, countPointsInObject, mapData[objectId].Count));
             }
+            Console.WriteLine(String.Format("Maximum possible WM value {0}", maximumPossibleWMvalue));
+        }
+
+        private static List<int> FindLoopingPositionsInLayer(int objectId, MapData mapData) {
+
+            List<int> duplicatingIndexes = new();
+
+            for (int i = 1; i < mapData[objectId].Count; i++) {
+                var previousItem = mapData[objectId][i - 1];
+                var currentItem = mapData[objectId][i];
+
+                if (previousItem.CompareTo(currentItem) == 0) {
+                    duplicatingIndexes.Add(i - 1);
+                }
+            }
+
+            return duplicatingIndexes;
+        }
+
+        private static int FindDifferenceForLooping(int objectId, MapData mapData) {
+            var loopingIndexes = FindLoopingPositionsInLayer(objectId, mapData);
+            var countPointsBeforeLooping = mapData[objectId].Count - loopingIndexes.Count;
+
+            if (loopingIndexes.Count == 0) {
+                return -1;
+            }
+
+            var loopingPosition = loopingIndexes[0] + 1;
+
+            if (loopingPosition == 1) {
+                return -1;
+            }
+
+            // Console.WriteLine(String.Format("Current quiv: {0}(mod X)={1}", countPointsBeforeLooping, loopingPosition));
+
+            return countPointsBeforeLooping - loopingPosition;
+        }
+
+        private static List<int> FindAllDifferencesInLayers(MapData mapData) {
+            List<int> mapLayerLoopingDifferences = new();
+            foreach (var mapObject in mapData) {
+                int objectId = mapObject.Key;
+                var currentDefference = FindDifferenceForLooping(objectId, mapData);
+                if (currentDefference != -1) {
+                    mapLayerLoopingDifferences.Add(currentDefference);
+                }
+            }
+            return mapLayerLoopingDifferences;
+        }
+
+        private static int GCD(int a, int b) {
+            while (b != 0)
+            {
+                int temp = b;
+                b = a % b;
+                a = temp;
+            }
+            return Math.Abs(a);
+        }
+
+        private static int GCDOfList(List<int> numbers) {
+            if (numbers == null || numbers.Count == 0)
+                throw new ArgumentException("List cannot be null or empty.");
+
+            int gcdResult = numbers[0];
+
+            for (int i = 1; i < numbers.Count; i++)
+            {
+                gcdResult = GCD(gcdResult, numbers[i]);
+                if (gcdResult == 1)
+                    return 1;
+            }
+
+            return gcdResult;
+        }
+
+        public static WaterMark FindWMDecimalFromLoopingsInMapData(MapData mapData) {
+            List<int> loopingDifferences = FindAllDifferencesInLayers(mapData);
+            return WaterMark.ConvertToWaterMark(GCDOfList(loopingDifferences));
         }
 
         private static int GetHash(int value, int waterMarkLength) => (int) (((A * value + B) % P) % waterMarkLength);
