@@ -106,20 +106,20 @@ namespace DigitalWaterMarkApp
 
         public void LoopDuplicatingPointsInLayers(MapData mapData) {
             var maximumPossibleWMvalue = MaxPossibleWaterMarkValue(mapData);
-            int wmDecimal = this.waterMark.ConvertToDecimal();
+            long wmDecimal = this.waterMark.ConvertToDecimal();
 
             foreach (var mapObject in mapData) {
                 int objectId = mapObject.Key;
                 int countPointsInObject = mapObject.Value.Count;
 
-                int periodAsPosition;
+                long periodAsPosition;
                 if (wmDecimal > maximumPossibleWMvalue) {
                     periodAsPosition = wmDecimal % countPointsInObject;
                 } else {
                     periodAsPosition = countPointsInObject % wmDecimal;
                 }
 
-                LoopDuplicatingPointsAtIndex(periodAsPosition, objectId, mapData);
+                LoopDuplicatingPointsAtIndex((int) periodAsPosition, objectId, mapData);
             }
         }
 

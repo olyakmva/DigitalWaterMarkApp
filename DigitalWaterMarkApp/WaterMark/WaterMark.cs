@@ -80,7 +80,7 @@ namespace DigitalWaterMarkApp
 
         public static String ConvertToBase(long value, int toBase) => Convert.ToString(value, toBase);
 
-        public int ConvertToDecimal() => Convert.ToInt32(string.Join("", this.Items.Select(item => item.WMValue)), 2);
+        public long ConvertToDecimal() => Convert.ToInt64(string.Join("", this.Items.Select(item => item.WMValue)), 2);
 
         public static WaterMark ConvertToWaterMark(long value) {
 
