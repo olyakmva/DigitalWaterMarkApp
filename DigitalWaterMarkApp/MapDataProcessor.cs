@@ -104,7 +104,7 @@ namespace DigitalWaterMarkApp
             }
         }
 
-        public void LoopDuplicatingPointsInLayers(MapData mapData) {
+        public void WaterMarkEmbeddingViaLoopingDuplicateOfPoints(MapData mapData) {
             var maximumPossibleWMvalue = MaxPossibleWaterMarkValue(mapData);
             long wmDecimal = this.waterMark.ConvertToDecimal();
 
