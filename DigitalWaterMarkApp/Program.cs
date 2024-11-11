@@ -40,7 +40,7 @@ class Program
         //     Console.WriteLine(String.Format("WM-Object key: {0}, vertices count {1}, {2}", mapDataObject.Key, mapDataObject.Value.Count, mapData.HasDuplicatedPoints(mapDataObject.Key)));
         // }
 
-        int test = 113;
+        int test = 36591295;
 
         Console.WriteLine("-------- ↓ ORIGINAL ↓ -----------");
         WaterMark waterMark = WaterMark.ConvertToWaterMark(test);

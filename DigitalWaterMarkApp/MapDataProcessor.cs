@@ -1,11 +1,5 @@
-using System.Globalization;
 using System.Numerics;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using SupportLib;
-using System.Net.Mail;
 
 namespace DigitalWaterMarkApp
 {
@@ -173,6 +167,18 @@ namespace DigitalWaterMarkApp
             return props.countPointsBeforeLooping - props.loopingPosition;
         }
 
+        private static List<(int loopingPosition, int countPointsBeforeLooping)> FindAllEquationPropsInLayers(MapData mapData) {
+            List<(int loopingPosition, int countPointsBeforeLooping)> mapLayerLoopingEquationProps = new();
+            foreach (var mapObject in mapData) {
+                int objectId = mapObject.Key;
+                var currentProp = FindEquationPropsForLayer(objectId, mapData);
+                if (Math.Min(currentProp.loopingPosition, currentProp.countPointsBeforeLooping) != -1) {
+                    mapLayerLoopingEquationProps.Add(currentProp);
+                }
+            }
+            return mapLayerLoopingEquationProps;
+        }
+
         private static List<int> FindAllDifferencesInLayers(MapData mapData) {
             List<int> mapLayerLoopingDifferences = new();
             foreach (var mapObject in mapData) {
@@ -185,73 +191,93 @@ namespace DigitalWaterMarkApp
             return mapLayerLoopingDifferences;
         }
 
-        private static int GCD(int a, int b) {
-            while (b != 0)
-            {
-                int temp = b;
-                b = a % b;
-                a = temp;
+        static BigInteger ExtendedGCD(BigInteger a, BigInteger b, out BigInteger x, out BigInteger y)
+        {
+            if (b == 0) {
+                x = 1;
+                y = 0;
+                return a;
             }
-            return Math.Abs(a);
+
+            BigInteger gcd = ExtendedGCD(b, a % b, out x, out y);
+            BigInteger temp = x;
+            x = y;
+            y = temp - (a / b) * y;
+
+            return gcd;
         }
 
-        private static int GCDOfList(List<int> numbers) {
+        private static long GCDOfList(List<int> numbers) {
             if (numbers == null || numbers.Count == 0)
                 throw new ArgumentException("List cannot be null or empty.");
 
-            int gcdResult = numbers[0];
+            BigInteger gcdResult = numbers[0];
 
             for (int i = 1; i < numbers.Count; i++)
             {
-                gcdResult = GCD(gcdResult, numbers[i]);
+                gcdResult = ExtendedGCD(gcdResult, numbers[i], out BigInteger _, out BigInteger _);
                 if (gcdResult == 1)
                     return 1;
             }
 
-            return gcdResult;
+            return (long) gcdResult;
         }
 
-        private static long Product(int[] A)
+        private static BigInteger Product(int[] A)
         {
-            long product = 1;
-            foreach (int a in A)
-            {
+            BigInteger product = 1;
+            foreach (int a in A) {
                 product *= a;
             }
             return product;
         }
 
-        private static long ChineseRemainderTheorem(int[] A, int[] B)
-        {
+        private static long ChineseRemainderTheorem(int[] A, int[] B) {
             if (A.Length != B.Length)
                 throw new ArgumentException("The lengths of A and B must be the same.");
 
-            long M = Product(A);
-            long x = 0;
+            BigInteger M = Product(A);
+            BigInteger x = 0;
 
             for (int i = 0; i < A.Length; i++)
             {
                 long ai = A[i];
                 long bi = B[i];
-                long Mi = M / ai;
+                BigInteger Mi = M / ai;
                 long yi = ModularInverse(Mi, ai);
 
                 x += bi * Mi * yi;
             }
 
-            return x % M;
+            return (long) (x % M);
         }
 
-        private static long ModularInverse(long a, long m)
+        private static long ModularInverse(BigInteger a, BigInteger m)
         {
-            a %= m;
-            for (long x = 1; x < m; x++)
+            BigInteger gcd = ExtendedGCD(a, m, out BigInteger x, out BigInteger y);
+
+            if (gcd != 1)
             {
-                if ((a * x) % m == 1)
-                    return x;
+                throw new ArgumentException("Ошибка поиска обратного элемента.");
             }
 
-            throw new Exception("Modular inverse does not exist.");
+            var inverseItem = (x % m + m) % m;
+            return (long) inverseItem;
+        }
+
+        private static List<(int loopingPosition, int countPointsBeforeLooping)>
+            FindPairwiseMutuallyPrimeNumbers(List<(int loopingPosition, int countPointsBeforeLooping)> equationProps) {
+            var resultEquationProps = new List<(int loopingPosition, int countPointsBeforeLooping)>();
+            for (int i = 0; i < equationProps.Count - 1; i++) {
+                int currentNumber = equationProps[i].countPointsBeforeLooping;
+                for (int j = i + 1; j < equationProps.Count; j++) {
+                    int nextNumber = equationProps[j].countPointsBeforeLooping;
+                    if (ExtendedGCD(currentNumber, nextNumber, out BigInteger _, out BigInteger _) != 1) {
+                        equationProps.RemoveAt(j--);
+                    }
+                }
+            }
+            return equationProps;
         }
 
         public static WaterMark FindWMDecimalFromLoopingsInMapData(MapData mapData) {
@@ -261,7 +287,7 @@ namespace DigitalWaterMarkApp
             // A_{1} mod x ≡ B_{1}
             // ...
             // A_{n} mod x ≡ B_{n}
-            int WMViaDifferences = GCDOfList(FindAllDifferencesInLayers(mapData));
+            long WMViaDifferences = GCDOfList(FindAllDifferencesInLayers(mapData));
 
             // В случае MaxPossibleWaterMarkValue < WM_10
             // x mod A_{0} ≡ B_{0}
@@ -269,7 +295,13 @@ namespace DigitalWaterMarkApp
             // ...
             // x mod A_{n} ≡ B_{n}
             if (WMViaDifferences == 1) {
-                // TODO: применение китайской теоремы об остатках
+                var equationProps = FindPairwiseMutuallyPrimeNumbers(FindAllEquationPropsInLayers(mapData));
+
+                var countPointsBeforeLoopingArray = equationProps.Select(propItem => propItem.countPointsBeforeLooping).ToArray();
+                var loopingPositionArray = equationProps.Select(propItem => propItem.loopingPosition).ToArray();
+
+                var WMViaCRT = ChineseRemainderTheorem(countPointsBeforeLoopingArray, loopingPositionArray);
+                return WaterMark.ConvertToWaterMark(WMViaCRT);
             }
 
             return WaterMark.ConvertToWaterMark(WMViaDifferences);
