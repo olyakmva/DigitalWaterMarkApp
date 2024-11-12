@@ -300,7 +300,7 @@ namespace DigitalWaterMarkApp
                 var countPointsBeforeLoopingArray = equationProps.Select(propItem => propItem.countPointsBeforeLooping).ToArray();
                 var loopingPositionArray = equationProps.Select(propItem => propItem.loopingPosition).ToArray();
 
-                var WMViaCRT = ChineseRemainderTheorem(countPointsBeforeLoopingArray, loopingPositionArray);
+                long WMViaCRT = ChineseRemainderTheorem(countPointsBeforeLoopingArray, loopingPositionArray);
                 return WaterMark.ConvertToWaterMark(WMViaCRT);
             }
 
