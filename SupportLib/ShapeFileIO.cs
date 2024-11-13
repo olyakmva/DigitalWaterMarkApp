@@ -4,7 +4,7 @@ namespace SupportLib
 {
     public class ShapeFileIO
     {
-        public MapData Open(string shapeFileName)
+        public static MapData Open(string shapeFileName)
         {
            var  _inputShape = FeatureSet.Open(shapeFileName);
             var mapData = Converter.ToMapData(_inputShape);
@@ -12,11 +12,11 @@ namespace SupportLib
             return mapData;
         }
 
-        public void Save(string fileName, MapData mapData)
+        public static void Save(string fileName, MapData mapData)
         {
             IFeatureSet fs = Converter.ToShape(mapData);
             fs.SaveAs(fileName + ".shp", true);
-            
+
         }
     }
 }

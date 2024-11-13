@@ -1,18 +1,22 @@
 using System.Numerics;
 using SupportLib;
 
-namespace DigitalWaterMarkApp
-{
-    public class MapDataProcessor
-    {
+namespace DigitalWaterMarkApp {
+
+    /// <summary>
+    /// Класс обработчик карты
+    /// </summary>
+    public class MapDataProcessor {
         private WaterMark waterMark;
 
-        // rlhlin1000.shp A=61 B=54 P=11 M=9
+        # region Константы функции универсального хэширования
 
         private static BigInteger A = 35;
         private static BigInteger B = 84;
 
         private static BigInteger P = 95;
+
+        #endregion
 
         public WaterMark WaterMark {
             get => waterMark;
@@ -23,6 +27,17 @@ namespace DigitalWaterMarkApp
             this.waterMark = waterMark;
         }
 
+        /// <summary>
+        /// Метод внедрения водяного знака путем изменения порядка хранения картографических объектов
+        /// Вычисление позиции внедряемого бита ЦВЗ основано на вычислении фнукции универсального хэширования с заранее заданными константами
+        /// Необходимость смены направления хранения определяется путем сравнения вычесленной позиции с текущим направлением хранения
+        /// Текущее направление хранения двух рядом лежащих объектов вычсиляется как результат сравнения числа точек в каждом из объектов
+        /// Прямое направление хранения объектов будем определять как 1, если число точек текущего объекта больше количества точек в следующем
+        /// Обратное направление хранения двух объектов определяется как 0 в противоположном случае
+        /// После смены направления хранения текущего объекта итерируем объекты карты дальше
+        /// </summary>
+        /// <param name="mapData">Объект карты, прочитанный из shp файла</param>
+        /// <returns>Объект карты с внедренным ЦВЗ</returns>
         public MapData WaterMarkEmbedding(MapData mapData) {
 
             for (int i = 0; i < mapData.MapObjDictionary.Count - 1; i++)
@@ -32,7 +47,6 @@ namespace DigitalWaterMarkApp
                 var storageDirection = GetMapObjectsStorageDirtection(mapData.MapObjDictionary[i].Value, mapData.MapObjDictionary[i + 1].Value);
 
                 if (waterMarkEmbeddingItem != storageDirection) {
-                    mapData.DuplicatePointInObjectByIndexAtPosition(i, waterMarkEmbeddingItemIdx);
                     mapData.SwapMapObjects(i, i + 1);
                 }
             }
@@ -40,6 +54,19 @@ namespace DigitalWaterMarkApp
             return mapData;
         }
 
+        /// <summary>
+        /// Метод извлечения ЦВЗ с применением функции хэширования используемой при внедрении
+        /// Входными параметрами являются карта с внедренным ЦВЗ и длина извлекаемого водяного знака
+        /// Метод извлечения водяного знака для каждой пары объектов определяет следующие значения:
+        ///     - индекс бита извлекаемого ЦВЗ как результат вычисления хэширующей функции
+        ///     - значение бита извлекаемого ЦВЗ как направление хранения текущих двух объектов
+        /// Поскольку объектов карты может быть сильно больше чем длина ЦВЗ, на каждый индекс извлекаемого ЦВЗ
+        /// может быть вычислено множество значений 0 или 1. Поэтому итоговое значение на каждом индекс водяного знака
+        /// определяется методов "голосования большинства", т.е. результирует значение, преобладающее большее число раз
+        /// </summary>
+        /// <param name="mapData">Объект карты с внедренным ЦВЗ</param>
+        /// <param name="waterMarkLength">Длина извлекаемого ЦВЗ</param>
+        /// <returns>Извлеченный водяной знак</returns>
         public static int[] WaterMarkExtracting(MapData mapData, int waterMarkLength) {
 
             Dictionary<int, List<int>> waterMarkValues = new();
@@ -69,24 +96,46 @@ namespace DigitalWaterMarkApp
             return waterMarkBestVariation;
         }
 
-        private static int MaxPossibleWaterMarkValue(MapData mapData) {
-            var maximumPossibleWMvalue = -1;
+        /// <summary>
+        /// Метод вычисляющий значение функции универсального хэширования
+        /// На вход передается целое число и ограничивающий модуль, т.е. длина ЦВЗ
+        /// </summary>
+        /// <param name="value">Входное значение</param>
+        /// <param name="waterMarkLength">Длина ЦВЗ как ограничивающий модуль</param>
+        /// <returns>Вычисленный хэш</returns>
+        private static int GetHash(int value, int waterMarkLength) => (int) (((A * value + B) % P) % waterMarkLength);
 
-            foreach (var mapObject in mapData) {
-                int objectId = mapObject.Key;
-                int countPointsInObject = mapObject.Value.Count;
-
-                if (countPointsInObject > maximumPossibleWMvalue) {
-                    maximumPossibleWMvalue = countPointsInObject;
-                }
-            }
-
-            maximumPossibleWMvalue -= 2;
-
-            Console.WriteLine(String.Format("Max possible watermark value: {0}", maximumPossibleWMvalue));
-            return maximumPossibleWMvalue;
+        /// <summary>
+        /// Метод, определяющий направление хранения двух объектов
+        /// Направление хранения двух объектов вычсиляется как результат сравнения числа точек в каждом из объектов
+        /// Прямое направление хранения объектов будем определять как 1, если число точек текущего объекта больше количества точек в следующем
+        /// Обратное направление хранения двух объектов определяется как 0 в противоположном случае
+        /// </summary>
+        /// <param name="firstMapObject">Первый объект карты</param>
+        /// <param name="secondMapObject">Второй объект карты</param>
+        /// <returns>Вычисленное направление хранения</returns>
+        private static int GetMapObjectsStorageDirtection(
+            List<MapPoint> firstMapObject,
+            List<MapPoint> secondMapObject
+        ) {
+            return firstMapObject.Count <= secondMapObject.Count ? 0 : 1;
         }
 
+        /*
+        * Ниже методы, описывающие альтернативный способ внедрения/извлечения ЦВЗ, осноанный на
+        * дублировании точек внутри картографических объектов.
+        * Этот метод не содержит вероятностных функций и является более устойчивым поскольку превосходит предыдущий метод
+        * при атаках путем делеции/инсерции объектов карты
+        */
+
+        /// <summary>
+        /// Метод дублирования точек внутри картографического объекта
+        /// На вход передается позиция, которая также служит периодом дублирования, т.е.
+        /// все точки начиная с переданной позиции с периодом в значение позиции однократно дублируются
+        /// </summary>
+        /// <param name="position">Позиция дублирования точки</param>
+        /// <param name="objectId">Идентификатор картографического объекта внутри карты</param>
+        /// <param name="mapData">Объект карты</param>
         private static void LoopDuplicatingPointsAtIndex(int position, int objectId, MapData mapData) {
 
             if (position == 0) {
@@ -104,8 +153,59 @@ namespace DigitalWaterMarkApp
             }
         }
 
+        /// <summary>
+        /// Метод вычисляющий максимальный размер объекта среди всех объектов карты
+        /// Определяется как максимально возможное значение числа точек среди всех объектов карты
+        /// </summary>
+        /// <param name="mapData">Объект карты</param>
+        /// <returns>Максимальный размер объекта</returns>
+        private static int MaxObjectSizeInMapData(MapData mapData) {
+            var maximumPossibleWMvalue = -1;
+
+            foreach (var mapObject in mapData) {
+                int objectId = mapObject.Key;
+                int countPointsInObject = mapObject.Value.Count;
+
+                if (countPointsInObject > maximumPossibleWMvalue) {
+                    maximumPossibleWMvalue = countPointsInObject;
+                }
+            }
+
+            maximumPossibleWMvalue -= 2;
+
+            Console.WriteLine(string.Format("Max possible watermark value: {0}", maximumPossibleWMvalue));
+            return maximumPossibleWMvalue;
+        }
+
+        /// <summary>
+        /// Метод поиска позиций, значения которых продублированы в картографическом объекте
+        /// Перебирает все точки объекта и запоминает позицию на которых обнаружена первая из дублированных точек
+        /// </summary>
+        /// <param name="objectId">Идентификатор картографического объекта</param>
+        /// <param name="mapData">Объект карты</param>
+        /// <returns>Список индексов продублированных точек в объекте карты</returns>
+        private static List<int> FindLoopingPositionsInMapDataObject(int objectId, MapData mapData) {
+
+            List<int> duplicatingIndexes = new();
+
+            for (int i = 1; i < mapData[objectId].Count; i++) {
+                var previousItem = mapData[objectId][i - 1];
+                var currentItem = mapData[objectId][i];
+
+                if (previousItem.CompareTo(currentItem) == 0) {
+                    duplicatingIndexes.Add(i - 1);
+                }
+            }
+
+            return duplicatingIndexes;
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="mapData"></param>
         public void WaterMarkEmbeddingViaLoopingDuplicateOfPoints(MapData mapData) {
-            var maximumPossibleWMvalue = MaxPossibleWaterMarkValue(mapData);
+            var maximumPossibleWMvalue = MaxObjectSizeInMapData(mapData);
             long wmDecimal = this.waterMark.ConvertToDecimal();
 
             foreach (var mapObject in mapData) {
@@ -123,24 +223,8 @@ namespace DigitalWaterMarkApp
             }
         }
 
-        private static List<int> FindLoopingPositionsInLayer(int objectId, MapData mapData) {
-
-            List<int> duplicatingIndexes = new();
-
-            for (int i = 1; i < mapData[objectId].Count; i++) {
-                var previousItem = mapData[objectId][i - 1];
-                var currentItem = mapData[objectId][i];
-
-                if (previousItem.CompareTo(currentItem) == 0) {
-                    duplicatingIndexes.Add(i - 1);
-                }
-            }
-
-            return duplicatingIndexes;
-        }
-
         private static (int loopingPosition, int countPointsBeforeLooping) FindEquationPropsForLayer(int objectId, MapData mapData) {
-            var loopingIndexes = FindLoopingPositionsInLayer(objectId, mapData);
+            var loopingIndexes = FindLoopingPositionsInMapDataObject(objectId, mapData);
             var countPointsBeforeLooping = mapData[objectId].Count - loopingIndexes.Count;
 
             if (loopingIndexes.Count == 0) {
@@ -191,8 +275,7 @@ namespace DigitalWaterMarkApp
             return mapLayerLoopingDifferences;
         }
 
-        static BigInteger ExtendedGCD(BigInteger a, BigInteger b, out BigInteger x, out BigInteger y)
-        {
+        static BigInteger ExtendedGCD(BigInteger a, BigInteger b, out BigInteger x, out BigInteger y) {
             if (b == 0) {
                 x = 1;
                 y = 0;
@@ -223,8 +306,7 @@ namespace DigitalWaterMarkApp
             return (long) gcdResult;
         }
 
-        private static BigInteger Product(int[] A)
-        {
+        private static BigInteger Product(int[] A) {
             BigInteger product = 1;
             foreach (int a in A) {
                 product *= a;
@@ -239,8 +321,7 @@ namespace DigitalWaterMarkApp
             BigInteger M = Product(A);
             BigInteger x = 0;
 
-            for (int i = 0; i < A.Length; i++)
-            {
+            for (int i = 0; i < A.Length; i++) {
                 long ai = A[i];
                 long bi = B[i];
                 BigInteger Mi = M / ai;
@@ -252,12 +333,10 @@ namespace DigitalWaterMarkApp
             return (long) (x % M);
         }
 
-        private static long ModularInverse(BigInteger a, BigInteger m)
-        {
+        private static long ModularInverse(BigInteger a, BigInteger m) {
             BigInteger gcd = ExtendedGCD(a, m, out BigInteger x, out BigInteger y);
 
-            if (gcd != 1)
-            {
+            if (gcd != 1) {
                 throw new ArgumentException("Ошибка поиска обратного элемента.");
             }
 
@@ -281,7 +360,7 @@ namespace DigitalWaterMarkApp
         }
 
         public static WaterMark FindWMDecimalFromLoopingsInMapData(MapData mapData) {
-            // В случае MaxPossibleWaterMarkValue > WM_10
+            // В случае MaxObjectSizeInMapData > WM_10
             // Решение системы вида:
             // A_{0} mod x ≡ B_{0}
             // A_{1} mod x ≡ B_{1}
@@ -289,7 +368,7 @@ namespace DigitalWaterMarkApp
             // A_{n} mod x ≡ B_{n}
             long WMViaDifferences = GCDOfList(FindAllDifferencesInLayers(mapData));
 
-            // В случае MaxPossibleWaterMarkValue < WM_10
+            // В случае MaxObjectSizeInMapData < WM_10
             // x mod A_{0} ≡ B_{0}
             // x mod A_{1} ≡ B_{1}
             // ...
@@ -305,15 +384,6 @@ namespace DigitalWaterMarkApp
             }
 
             return WaterMark.ConvertToWaterMark(WMViaDifferences);
-        }
-
-        private static int GetHash(int value, int waterMarkLength) => (int) (((A * value + B) % P) % waterMarkLength);
-
-        private static int GetMapObjectsStorageDirtection(
-            List<MapPoint> firstMapObject,
-            List<MapPoint> secondMapObject
-        ) {
-            return firstMapObject.Count <= secondMapObject.Count ? 0 : 1;
         }
     }
 }

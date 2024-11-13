@@ -4,15 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace DigitalWaterMarkApp
-{
+namespace DigitalWaterMarkApp {
     /**
         Класс водяного знака
         Содержит методы следующей и предыдущений
         трансформации преобразованием Арнольда
     */
-    public class WaterMark : IEnumerable<WaterMarkItem>
-    {
+    public class WaterMark : IEnumerable<WaterMarkItem> {
         private int size;
         private List<WaterMarkItem> items;
 
@@ -35,8 +33,7 @@ namespace DigitalWaterMarkApp
         }
 
         public void NextIterateArnlodTransform() {
-            foreach (WaterMarkItem item in this.Items)
-            {
+            foreach (WaterMarkItem item in this.Items) {
                 var newColIdx = (2 * item.ColIdx + item.RowIdx) % size + 1;
                 var newRowIdx = (item.ColIdx + item.RowIdx) % size + 1;
 
@@ -48,8 +45,7 @@ namespace DigitalWaterMarkApp
         }
 
         public void PreviousIterateArnlodTransform() {
-            foreach (WaterMarkItem item in this.Items)
-            {
+            foreach (WaterMarkItem item in this.Items) {
                 item.ColIdx--;
                 item.RowIdx--;
 
@@ -67,8 +63,7 @@ namespace DigitalWaterMarkApp
         }
 
         public void IterateKTransforms(int k) {
-            for (int i = 0; i < k; i++)
-            {
+            for (int i = 0; i < k; i++) {
                 NextIterateArnlodTransform();
             }
         }
@@ -83,8 +78,6 @@ namespace DigitalWaterMarkApp
         public long ConvertToDecimal() => Convert.ToInt64(string.Join("", this.Items.Select(item => item.WMValue)), 2);
 
         public static WaterMark ConvertToWaterMark(long value) {
-
-
             int binaryLength = ConvertToBase(value, 2).Length;
 
             int size = 0;
@@ -110,22 +103,18 @@ namespace DigitalWaterMarkApp
             return new WaterMark(items, size);
         }
 
-        public int this[int index]
-        {
+        public int this[int index] {
             get => this.Items[index].WMValue;
             set => this.Items[index].WMValue = value;
         }
 
-        public IEnumerator<WaterMarkItem> GetEnumerator()
-        {
-            foreach (WaterMarkItem item in this.Items)
-            {
+        public IEnumerator<WaterMarkItem> GetEnumerator() {
+            foreach (WaterMarkItem item in this.Items) {
                 yield return item;
             }
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
+        IEnumerator IEnumerable.GetEnumerator() {
             return GetEnumerator();
         }
 

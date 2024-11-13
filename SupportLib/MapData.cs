@@ -104,13 +104,6 @@ namespace SupportLib
                 = (this.MapObjDictionary[firstMapObjectIndex], this.MapObjDictionary[secondMapObjectIndex]);
         }
 
-        public void DuplicatePointInObjectByIndexAtPosition(int objectIndex, int waterMarkEmbeddingItemIdx) {
-            var mapObject = this.MapObjDictionary[objectIndex];
-            var mapObjectPoints = mapObject.Value;
-            var duplicatingPosition = waterMarkEmbeddingItemIdx % mapObjectPoints.Count;
-            mapObjectPoints.Insert(duplicatingPosition, mapObjectPoints[duplicatingPosition]);
-        }
-
         public Object HasDuplicatedPoints(int objectIndex) {
             var duplicates = this.MapObjDictionary[objectIndex - 1].Value
                 .GroupBy(x => new { x.X, x.Y })

@@ -4,10 +4,8 @@
 using DigitalWaterMarkApp;
 using SupportLib;
 
-class Program
-{
-    public static void PrintWaterMark(WaterMark waterMark)
-    {
+class Program {
+    public static void PrintWaterMark(WaterMark waterMark) {
         for (int i = 0; i < waterMark.Size * waterMark.Size; i++)
         {
             Console.Write(waterMark[i] + " ");
@@ -15,27 +13,13 @@ class Program
         Console.WriteLine();
     }
 
-    public static void PrintWaterMark(int[] waterMark)
-    {
-        for (int i = 0; i < waterMark.Length; i++)
-        {
-            Console.Write(waterMark[i] + " ");
-        }
-        Console.WriteLine();
-    }
+    public static void Main() {
 
-    public static void Main()
-    {
-        /**
-        * rivers1000k.shp
-        * rlhlin1000.shp
-        */
-
-        ShapeFileIO shapeFileIO = new();
-        MapData mapData = shapeFileIO.Open("test1/rivers1000k.shp");
+        MapData mapData = ShapeFileIO.Open("../Data/DataForDescriptor/Plus75/piplin1000.shp");
         List<KeyValuePair<int, List<MapPoint>>> objectList = mapData.MapObjDictionary;
+        Console.WriteLine(string.Format("Objects count in map: {0}", objectList.Count));
 
-        long test = 36125;
+        long test = 26593;
 
         Console.WriteLine("-------- ↓ ORIGINAL ↓ -----------");
         WaterMark waterMark = WaterMark.ConvertToWaterMark(test);
@@ -44,8 +28,7 @@ class Program
         MapDataProcessor mapDataProcessor = new(waterMark);
         mapDataProcessor.WaterMarkEmbeddingViaLoopingDuplicateOfPoints(mapData);
 
-        ShapeFileIO saveMapData = new();
-        saveMapData.Save("test1/rivers1000k_NEW.shp", mapData);
+        // ShapeFileIO.Save("test1/rivers1000k_NEW.shp", mapData);
 
         Console.WriteLine("-------- ↓ FROM LOOPING ↓ -----------");
 

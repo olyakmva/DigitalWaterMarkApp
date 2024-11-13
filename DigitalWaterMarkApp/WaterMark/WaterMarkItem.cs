@@ -3,13 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace DigitalWaterMarkApp
-{
+namespace DigitalWaterMarkApp {
     /**
         Класс элемента водяного знака
     */
-    public class WaterMarkItem : IComparable<WaterMarkItem>
-    {
+    public class WaterMarkItem : IComparable<WaterMarkItem> {
         private int wmValue;
         private int rowIdx;
         private int colIdx;
@@ -39,8 +37,7 @@ namespace DigitalWaterMarkApp
             this.ColIdx = ColIdx;
         }
 
-        public int CompareTo(WaterMarkItem? other)
-        {
+        public int CompareTo(WaterMarkItem? other) {
             if (other == null) {
                 throw new ArgumentNullException(null, "WaterMarkItem not comparing with null");
             }
@@ -52,9 +49,8 @@ namespace DigitalWaterMarkApp
             return this.ColIdx.CompareTo(other.ColIdx);
         }
 
-        public override string ToString()
-        {
-            return String.Format("({0}:{1} - {2})", this.RowIdx, this.ColIdx, this.WMValue);
+        public override string ToString() {
+            return string.Format("({0}:{1} - {2})", this.RowIdx, this.ColIdx, this.WMValue);
         }
     }
 }
