@@ -201,9 +201,13 @@ namespace DigitalWaterMarkApp {
         }
 
         /// <summary>
-        ///
+        /// Метод внедрения ЦВЗ в объект карты путем периодического дублирования точек в каждом объекте
+        /// Первая позиция и последующий период (равный значению позиции) вычсиляется следующими способами:
+        ///     - если десятичное представление ЦВЗ превышает максимально возможный размер объекта среди всех,
+        ///       то позиция это остаток от деления десятичного значения ЦВЗ на размер соответсвующего объекта
+        ///     - в противном случае берется остаток от деления размера соответсвующего объекта на десятичное значение ЦВЗ
         /// </summary>
-        /// <param name="mapData"></param>
+        /// <param name="mapData">Объект карты</param>
         public void WaterMarkEmbeddingViaLoopingDuplicateOfPoints(MapData mapData) {
             var maximumPossibleWMvalue = MaxObjectSizeInMapData(mapData);
             long wmDecimal = this.waterMark.ConvertToDecimal();
@@ -223,6 +227,63 @@ namespace DigitalWaterMarkApp {
             }
         }
 
+        /// <summary>
+        /// Извлечение ЦВЗ из объекта карты осуществляется следующими вариантами:
+        /// Сперва рассматривается случай когда десятичное значение ЦВЗ перед внедрением было меньше (или равным) чем максимально возможный размер объекта среди всех
+        /// В этом случае поиск значения ЦВЗ сводится к задаче решения системы вида A_{i} mod x ≡ B_{i} i=1..N, где N - число объектов карты,
+        /// A_{i} - период дублирования точек, B_{i} - исходный размер объекта
+        /// Необходимо найти общий модуль, который является значением ЦВЗ в десятичном представлении
+        /// Решение такой системы ищется как НОД множества из объектов B_{i}-A_{i}
+        ///
+        /// Поскольку может быть случай когда задача не имеет решений то есть НОД = 1, то
+        ///
+        /// Из этого следует, что исходное значение ЦВЗ могло превышать максимально возможный размер объекта среди всех
+        /// В этом случае остаток искался от деления значения ЦВЗ на размер каждого объекта
+        /// То есть задача сводится к решению системы вида x mod B_{i} ≡ A_{i} i=1..N, где N - число объектов карты,
+        /// A_{i} - период дублирования точек, B_{i} - исходный размер объекта
+        /// Для решения системы такого вида сперва находим такие B_{i}, что НОД(B_{i},B_{j}) для любых i=1..N,j=1..N,i!=j = 1,
+        /// то есть ищем множество в котором любые два элемента взаимно простые
+        /// Затем для найденных пар A_{i}*, B_{i}*, i=1..M, M<=N применяем китайскую теорему об остатках
+        /// Ее результат будет являться искомым значением ЦВЗ
+        /// </summary>
+        /// <param name="mapData">Объект карты</param>
+        /// <returns>Искомый ЦВЗ</returns>
+        public static WaterMark FindWMDecimalFromLoopingsInMapData(MapData mapData) {
+            // В случае MaxObjectSizeInMapData > WM_10
+            // Решение системы вида:
+            // A_{0} mod x ≡ B_{0}
+            // A_{1} mod x ≡ B_{1}
+            // ...
+            // A_{n} mod x ≡ B_{n}
+            long WMViaDifferences = GCDOfList(FindAllDifferencesInLayers(mapData));
+
+            // В случае MaxObjectSizeInMapData < WM_10
+            // x mod B_{0} ≡ A_{0}
+            // x mod B_{1} ≡ A_{1}
+            // ...
+            // x mod B_{n} ≡ A_{n}
+            if (WMViaDifferences == 1) {
+                var equationProps = FindPairwiseMutuallyPrimeNumbers(FindAllEquationPropsInLayers(mapData));
+
+                var countPointsBeforeLoopingArray = equationProps.Select(propItem => propItem.countPointsBeforeLooping).ToArray();
+                var loopingPositionArray = equationProps.Select(propItem => propItem.loopingPosition).ToArray();
+
+                long WMViaCRT = ChineseRemainderTheorem(countPointsBeforeLoopingArray, loopingPositionArray);
+                return WaterMark.ConvertToWaterMark(WMViaCRT);
+            }
+
+            return WaterMark.ConvertToWaterMark(WMViaDifferences);
+        }
+
+        /// <summary>
+        /// Метод возвращающий для объекта карты набор пар (A, B), где A - период дублирования точек в объекте, B - размер объекта перед внедрением ЦВЗ
+        /// Сперва находятся все позции точки на которых были продублированы. Запоминается первая позиция, которая также соответсвует периоду дублирования
+        /// Затем из числа точек объекта карты с дубликатами вычитается число точек, которые подверглись дублированию
+        /// Найденная разность является числом точек в этом объекте до внедрения ЦВЗ
+        /// </summary>
+        /// <param name="objectId">Идентификатор объекта</param>
+        /// <param name="mapData">Объект карты</param>
+        /// <returns>Пара (A, B), где A - период дублирования точек в объекте, B - размер объекта перед внедрением ЦВЗ</returns>
         private static (int loopingPosition, int countPointsBeforeLooping) FindEquationPropsForLayer(int objectId, MapData mapData) {
             var loopingIndexes = FindLoopingPositionsInMapDataObject(objectId, mapData);
             var countPointsBeforeLooping = mapData[objectId].Count - loopingIndexes.Count;
@@ -240,6 +301,13 @@ namespace DigitalWaterMarkApp {
             return (loopingPosition, countPointsBeforeLooping);
         }
 
+        /// <summary>
+        /// Метод вовзращающий разность B-A для пары (A, B), где A - период дублирования точек в объекте ЦВЗ, B - размер объекта перед внедрением
+        /// Является вспомогательным методом для решения системы вида A_{i} mod x ≡ B_{i} i=1..N, где N - число объектов карты
+        /// </summary>
+        /// <param name="objectId">Идентификатор объекта</param>
+        /// <param name="mapData">Объект карты</param>
+        /// <returns>Искомая разность</returns>
         private static int FindDifferenceForLooping(int objectId, MapData mapData) {
 
             var props = FindEquationPropsForLayer(objectId, mapData);
@@ -251,6 +319,12 @@ namespace DigitalWaterMarkApp {
             return props.countPointsBeforeLooping - props.loopingPosition;
         }
 
+        /// <summary>
+        /// Метод возращающий для объекта карты список пар (A_{i}, B_{i}) i=1..N, где N - число объектов карты,
+        /// A_{i} - период дублирования точек, B_{i} - размер объекта перед внедрением ЦВЗ в объекте
+        /// </summary>
+        /// <param name="mapData">Объект карты</param>
+        /// <returns>Список пар (A, B), где A - период дублирования точек в объекте, B - размер объекта перед внедрением ЦВЗ</returns>
         private static List<(int loopingPosition, int countPointsBeforeLooping)> FindAllEquationPropsInLayers(MapData mapData) {
             List<(int loopingPosition, int countPointsBeforeLooping)> mapLayerLoopingEquationProps = new();
             foreach (var mapObject in mapData) {
@@ -263,6 +337,33 @@ namespace DigitalWaterMarkApp {
             return mapLayerLoopingEquationProps;
         }
 
+        /// <summary>
+        /// Возвращает для списка пар (A_{i}, B_{i}), i=1..N, где N - число объектов карты,
+        /// A_{i} - период дублирования точек в объекте ЦВЗ, B_{i} - размер объекта перед внедрением
+        /// список пар (A_{k}*, B_{k}*), где для НОД(B_{i'}*, B_{j'}*)=1, i'=1..N,j'=1..N,i'!=j',k=M,M<=N
+        /// </summary>
+        /// <param name="equationProps"></param>
+        /// <returns>Спсиок пар</returns>
+        private static List<(int loopingPosition, int countPointsBeforeLooping)>
+            FindPairwiseMutuallyPrimeNumbers(List<(int loopingPosition, int countPointsBeforeLooping)> equationProps) {
+            for (int i = 0; i < equationProps.Count - 1; i++) {
+                int currentNumber = equationProps[i].countPointsBeforeLooping;
+                for (int j = i + 1; j < equationProps.Count; j++) {
+                    int nextNumber = equationProps[j].countPointsBeforeLooping;
+                    if (ExtendedGCD(currentNumber, nextNumber, out BigInteger _, out BigInteger _) != 1) {
+                        equationProps.RemoveAt(j--);
+                    }
+                }
+            }
+            return equationProps;
+        }
+
+        /// <summary>
+        /// Возвращает список разностей B-A для списка пар (A, B), где A - период дублирования точек в объекте, B - размер объекта перед внедрением ЦВЗ
+        /// Является вспомогательным методом для решения системы вида A_{i} mod x ≡ B_{i} i=1..N, где N - число объектов карты
+        /// </summary>
+        /// <param name="mapData">Объект карты</param>
+        /// <returns>Список разностей B-A пар (A, B)</returns>
         private static List<int> FindAllDifferencesInLayers(MapData mapData) {
             List<int> mapLayerLoopingDifferences = new();
             foreach (var mapObject in mapData) {
@@ -275,6 +376,15 @@ namespace DigitalWaterMarkApp {
             return mapLayerLoopingDifferences;
         }
 
+        /// <summary>
+        /// Расширенный алгоритм Евклида
+        /// На вход передаются числа a, b для поиска НОД
+        /// И неприсвоенные значения x, y, которые будут являться коэффициентами Безу
+        /// Поиск коээфициентов Безу необходим для нахождения обратного модуля в теореме КТО
+        /// в случае решения системы вида x mod B_{i} ≡ A_{i} i=1..N, где N - число объектов карты,
+        /// A_{i} - период дублирования точек, B_{i} - исходный размер объекта
+        /// </summary>
+        /// <returns>НОД(a, b)</returns>
         static BigInteger ExtendedGCD(BigInteger a, BigInteger b, out BigInteger x, out BigInteger y) {
             if (b == 0) {
                 x = 1;
@@ -290,14 +400,20 @@ namespace DigitalWaterMarkApp {
             return gcd;
         }
 
+        /// <summary>
+        /// Метод упрощающий поиск НОД для списка чисел
+        /// Поочередно для каждого числа считает НОД предыдущего вычисленного значения НОД и нового числа
+        /// </summary>
+        /// <param name="numbers">Список чисел для поиска НОД</param>
+        /// <returns>НОД</returns>
+        /// <exception cref="ArgumentException"></exception>
         private static long GCDOfList(List<int> numbers) {
             if (numbers == null || numbers.Count == 0)
-                throw new ArgumentException("List cannot be null or empty.");
+                throw new ArgumentException("Список не может быть пустым");
 
             BigInteger gcdResult = numbers[0];
 
-            for (int i = 1; i < numbers.Count; i++)
-            {
+            for (int i = 1; i < numbers.Count; i++) {
                 gcdResult = ExtendedGCD(gcdResult, numbers[i], out BigInteger _, out BigInteger _);
                 if (gcdResult == 1)
                     return 1;
@@ -306,19 +422,15 @@ namespace DigitalWaterMarkApp {
             return (long) gcdResult;
         }
 
-        private static BigInteger Product(int[] A) {
-            BigInteger product = 1;
-            foreach (int a in A) {
-                product *= a;
-            }
-            return product;
-        }
-
+        /// <summary>
+        /// Метод реализующий алгоритм китайской теоремы об остатках
+        /// </summary>
         private static long ChineseRemainderTheorem(int[] A, int[] B) {
             if (A.Length != B.Length)
                 throw new ArgumentException("The lengths of A and B must be the same.");
 
-            BigInteger M = Product(A);
+            // Произведение
+            BigInteger M = A.Select(a => (BigInteger) a).Aggregate(BigInteger.Multiply);
             BigInteger x = 0;
 
             for (int i = 0; i < A.Length; i++) {
@@ -333,6 +445,9 @@ namespace DigitalWaterMarkApp {
             return (long) (x % M);
         }
 
+        /// <summary>
+        /// Метод реализующий алгоритм поиска обратного модульного элемента
+        /// </summary>
         private static long ModularInverse(BigInteger a, BigInteger m) {
             BigInteger gcd = ExtendedGCD(a, m, out BigInteger x, out BigInteger y);
 
@@ -342,48 +457,6 @@ namespace DigitalWaterMarkApp {
 
             var inverseItem = (x % m + m) % m;
             return (long) inverseItem;
-        }
-
-        private static List<(int loopingPosition, int countPointsBeforeLooping)>
-            FindPairwiseMutuallyPrimeNumbers(List<(int loopingPosition, int countPointsBeforeLooping)> equationProps) {
-            var resultEquationProps = new List<(int loopingPosition, int countPointsBeforeLooping)>();
-            for (int i = 0; i < equationProps.Count - 1; i++) {
-                int currentNumber = equationProps[i].countPointsBeforeLooping;
-                for (int j = i + 1; j < equationProps.Count; j++) {
-                    int nextNumber = equationProps[j].countPointsBeforeLooping;
-                    if (ExtendedGCD(currentNumber, nextNumber, out BigInteger _, out BigInteger _) != 1) {
-                        equationProps.RemoveAt(j--);
-                    }
-                }
-            }
-            return equationProps;
-        }
-
-        public static WaterMark FindWMDecimalFromLoopingsInMapData(MapData mapData) {
-            // В случае MaxObjectSizeInMapData > WM_10
-            // Решение системы вида:
-            // A_{0} mod x ≡ B_{0}
-            // A_{1} mod x ≡ B_{1}
-            // ...
-            // A_{n} mod x ≡ B_{n}
-            long WMViaDifferences = GCDOfList(FindAllDifferencesInLayers(mapData));
-
-            // В случае MaxObjectSizeInMapData < WM_10
-            // x mod A_{0} ≡ B_{0}
-            // x mod A_{1} ≡ B_{1}
-            // ...
-            // x mod A_{n} ≡ B_{n}
-            if (WMViaDifferences == 1) {
-                var equationProps = FindPairwiseMutuallyPrimeNumbers(FindAllEquationPropsInLayers(mapData));
-
-                var countPointsBeforeLoopingArray = equationProps.Select(propItem => propItem.countPointsBeforeLooping).ToArray();
-                var loopingPositionArray = equationProps.Select(propItem => propItem.loopingPosition).ToArray();
-
-                long WMViaCRT = ChineseRemainderTheorem(countPointsBeforeLoopingArray, loopingPositionArray);
-                return WaterMark.ConvertToWaterMark(WMViaCRT);
-            }
-
-            return WaterMark.ConvertToWaterMark(WMViaDifferences);
         }
     }
 }

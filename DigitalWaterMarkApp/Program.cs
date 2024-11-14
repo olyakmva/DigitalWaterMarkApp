@@ -42,4 +42,3 @@ class Program {
         // PrintWaterMark(extractedWM);
     }
 }
-
