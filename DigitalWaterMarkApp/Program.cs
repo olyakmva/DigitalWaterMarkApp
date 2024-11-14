@@ -15,11 +15,11 @@ class Program {
 
     public static void Main() {
 
-        MapData mapData = ShapeFileIO.Open("../Data/DataForDescriptor/Plus75/piplin1000.shp");
+        MapData mapData = ShapeFileIO.Open("../Data/DataForDescriptor/Init16K/hdrLine1000i.shp");
         List<KeyValuePair<int, List<MapPoint>>> objectList = mapData.MapObjDictionary;
         Console.WriteLine(string.Format("Objects count in map: {0}", objectList.Count));
 
-        long test = 26593;
+        long test = 11;
 
         Console.WriteLine("-------- ↓ ORIGINAL ↓ -----------");
         WaterMark waterMark = WaterMark.ConvertToWaterMark(test);

@@ -11,10 +11,7 @@ namespace DigitalWaterMarkApp {
 
         # region Константы функции универсального хэширования
 
-        private static BigInteger A = 35;
-        private static BigInteger B = 84;
-
-        private static BigInteger P = 95;
+        private static readonly BigInteger A = 35, B = 84, P = 95;
 
         #endregion
 
@@ -161,6 +158,7 @@ namespace DigitalWaterMarkApp {
         /// <returns>Максимальный размер объекта</returns>
         private static int MaxObjectSizeInMapData(MapData mapData) {
             var maximumPossibleWMvalue = -1;
+            var minimumPossibleWMvalue = int.MaxValue;
 
             foreach (var mapObject in mapData) {
                 int objectId = mapObject.Key;
@@ -169,11 +167,17 @@ namespace DigitalWaterMarkApp {
                 if (countPointsInObject > maximumPossibleWMvalue) {
                     maximumPossibleWMvalue = countPointsInObject;
                 }
+
+                if (countPointsInObject < minimumPossibleWMvalue) {
+                    minimumPossibleWMvalue = countPointsInObject;
+                }
             }
 
+            // Вычитание необходимо для того, чтобы при выборе водяного знака со значением равным значению максимума или
+            // меньшим чем значение максимума в 1 не происходило ошибок при решении систем
             maximumPossibleWMvalue -= 2;
 
-            Console.WriteLine(string.Format("Max possible watermark value: {0}", maximumPossibleWMvalue));
+            Console.WriteLine(string.Format("Max possible watermark value: {0}, min: {1}", maximumPossibleWMvalue, minimumPossibleWMvalue));
             return maximumPossibleWMvalue;
         }
 
