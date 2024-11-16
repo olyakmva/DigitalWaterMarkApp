@@ -35,7 +35,7 @@ class Program {
         PrintWaterMark(waterMarkFromLooping);
 
         Console.WriteLine("-------- ↓ TESTING DROP ATTACK ↓ -----------");
-        List<float> percentages = new() { 0.3F, 0.5F, 0.7F, 0.9F, 0.95F };
+        List<float> percentages = new() { 0.3F, 0.5F, 0.7F, 0.8F, 0.9F, 0.95F };
         foreach (var percentage in percentages) {
             Console.WriteLine(string.Format("-------- ↓ FROM {0}% ↓ -----------", (int) ((1 - percentage) * 100)));
             var percentOfMapData = AttackRepropducer.DropRandomPercentageOfData(percentage, mapData);
