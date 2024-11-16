@@ -34,35 +34,14 @@ class Program {
         var waterMarkFromLooping = MapDataProcessor.FindWMDecimalFromLoopingsInMapData(mapData);
         PrintWaterMark(waterMarkFromLooping);
 
-        Console.WriteLine("-------- ↓ FROM 70% ↓ -----------");
-        var per70_OfMapData = AttackRepropducer.DropRandomPercentageOfData(0.3, mapData);
-        Console.WriteLine(string.Format("Objects count in map: {0}", per70_OfMapData.ObjectsCount));
-        var per70_WaterMarkFromLooping = MapDataProcessor.FindWMDecimalFromLoopingsInMapData(per70_OfMapData);
-        PrintWaterMark(per70_WaterMarkFromLooping);
-
-        Console.WriteLine("-------- ↓ FROM 50% ↓ -----------");
-        var per50_OfMapData = AttackRepropducer.DropRandomPercentageOfData(0.5, mapData);
-        Console.WriteLine(string.Format("Objects count in map: {0}", per50_OfMapData.ObjectsCount));
-        var per50_WaterMarkFromLooping = MapDataProcessor.FindWMDecimalFromLoopingsInMapData(per50_OfMapData);
-        PrintWaterMark(per50_WaterMarkFromLooping);
-
-        Console.WriteLine("-------- ↓ FROM 30% ↓ -----------");
-        var per30_OfMapData = AttackRepropducer.DropRandomPercentageOfData(0.7, mapData);
-        Console.WriteLine(string.Format("Objects count in map: {0}", per30_OfMapData.ObjectsCount));
-        var per30_WaterMarkFromLooping = MapDataProcessor.FindWMDecimalFromLoopingsInMapData(per30_OfMapData);
-        PrintWaterMark(per30_WaterMarkFromLooping);
-
-        Console.WriteLine("-------- ↓ FROM 10% ↓ -----------");
-        var per10_OfMapData = AttackRepropducer.DropRandomPercentageOfData(0.9, mapData);
-        Console.WriteLine(string.Format("Objects count in map: {0}", per10_OfMapData.ObjectsCount));
-        var per10_WaterMarkFromLooping = MapDataProcessor.FindWMDecimalFromLoopingsInMapData(per10_OfMapData);
-        PrintWaterMark(per10_WaterMarkFromLooping);
-
-        Console.WriteLine("-------- ↓ FROM 5% ↓ -----------");
-        var per5_OfMapData = AttackRepropducer.DropRandomPercentageOfData(0.95, mapData);
-        Console.WriteLine(string.Format("Objects count in map: {0}", per5_OfMapData.ObjectsCount));
-        var per5_WaterMarkFromLooping = MapDataProcessor.FindWMDecimalFromLoopingsInMapData(per5_OfMapData);
-        PrintWaterMark(per5_WaterMarkFromLooping);
+        List<float> percentages = new() { 0.3F, 0.5F, 0.7F, 0.9F, 0.95F };
+        foreach (var percentage in percentages) {
+            Console.WriteLine(string.Format("-------- ↓ FROM {0}% ↓ -----------", (int) ((1 - percentage) * 100)));
+            var percentOfMapData = AttackRepropducer.DropRandomPercentageOfData(percentage, mapData);
+            Console.WriteLine(string.Format("Objects count in map: {0}", percentOfMapData.ObjectsCount));
+            var waterMarkFromLoopingInPercentMapData = MapDataProcessor.FindWMDecimalFromLoopingsInMapData(percentOfMapData);
+            PrintWaterMark(waterMarkFromLoopingInPercentMapData);
+        }
 
         // Console.WriteLine("-------- ↓ FROM EXTRACTED ↓ -----------");
 
