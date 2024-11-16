@@ -28,7 +28,7 @@ class Program {
         MapDataProcessor mapDataProcessor = new(waterMark);
         mapDataProcessor.WaterMarkEmbeddingViaLoopingDuplicateOfPoints(mapData);
 
-        // ShapeFileIO.Save("test1/rivers1000k_NEW.shp", mapData);
+        ShapeFileIO.Save("../Data/DataForDescriptor/Init16K/hdrLine1000i_new.shp", mapData);
 
         Console.WriteLine("-------- ↓ FROM LOOPING ↓ -----------");
         var waterMarkFromLooping = MapDataProcessor.FindWMDecimalFromLoopingsInMapData(mapData);
@@ -50,10 +50,10 @@ class Program {
         var waterMarkFromLoopingInShufflingMapData = MapDataProcessor.FindWMDecimalFromLoopingsInMapData(shufflingAttackResult.shufflingMapData);
         PrintWaterMark(waterMarkFromLoopingInShufflingMapData);
 
-        // Console.WriteLine("-------- ↓ FROM EXTRACTED ↓ -----------");
+        Console.WriteLine("-------- ↓ FROM EXTRACTED ↓ -----------");
 
-        // var mapDataWithWaterMark = mapDataProcessor.WaterMarkEmbedding(mapData);
-        // var extractedWM = MapDataProcessor.WaterMarkExtracting(mapDataWithWaterMark, waterMark.Length);
-        // PrintWaterMark(extractedWM);
+        var mapDataWithWaterMark = mapDataProcessor.WaterMarkEmbedding(mapData);
+        var extractedWM = MapDataProcessor.WaterMarkExtracting(mapDataWithWaterMark, waterMark.Length);
+        Console.WriteLine(string.Join(' ', extractedWM.Select(i => i.ToString())));
     }
 }
