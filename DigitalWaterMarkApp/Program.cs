@@ -34,6 +34,7 @@ class Program {
         var waterMarkFromLooping = MapDataProcessor.FindWMDecimalFromLoopingsInMapData(mapData);
         PrintWaterMark(waterMarkFromLooping);
 
+        Console.WriteLine("-------- ↓ TESTING DROP ATTACK ↓ -----------");
         List<float> percentages = new() { 0.3F, 0.5F, 0.7F, 0.9F, 0.95F };
         foreach (var percentage in percentages) {
             Console.WriteLine(string.Format("-------- ↓ FROM {0}% ↓ -----------", (int) ((1 - percentage) * 100)));
@@ -42,6 +43,12 @@ class Program {
             var waterMarkFromLoopingInPercentMapData = MapDataProcessor.FindWMDecimalFromLoopingsInMapData(percentOfMapData);
             PrintWaterMark(waterMarkFromLoopingInPercentMapData);
         }
+
+        Console.WriteLine("-------- ↓ TESTING SHUFFLE ATTACK ↓ -----------");
+        var shufflingAttackResult = AttackRepropducer.ShuffleObjectsInMap(mapData);
+        Console.WriteLine(string.Format("Similiar objects percentage: {0}", shufflingAttackResult.similiarObjectsPercentage));
+        var waterMarkFromLoopingInShufflingMapData = MapDataProcessor.FindWMDecimalFromLoopingsInMapData(shufflingAttackResult.shufflingMapData);
+        PrintWaterMark(waterMarkFromLoopingInShufflingMapData);
 
         // Console.WriteLine("-------- ↓ FROM EXTRACTED ↓ -----------");
 

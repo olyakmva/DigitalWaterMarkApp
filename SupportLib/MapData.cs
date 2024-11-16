@@ -22,15 +22,6 @@ namespace SupportLib
             ColorName = Colors.GetNext();
         }
 
-        public MapData Copy()
-        {
-            return  new()
-            {
-                MapObjDictionary = new List<KeyValuePair<int, List<MapPoint>>>(this.MapObjDictionary),
-                ColorName = this.ColorName.Copy()
-            };
-        }
-
         public MapData(GeometryType type) :this()
         {
             Geometry = type;
@@ -112,6 +103,13 @@ namespace SupportLib
         public void Remove(int index) => this.MapObjDictionary.RemoveAt(this.MapObjDictionary.FindIndex(kvp => kvp.Key == index));
 
         public void SwapMapObjects(int firstMapObjectIndex, int secondMapObjectIndex) {
+            (this.MapObjDictionary[secondMapObjectIndex], this.MapObjDictionary[firstMapObjectIndex])
+                = (this.MapObjDictionary[firstMapObjectIndex], this.MapObjDictionary[secondMapObjectIndex]);
+        }
+
+        public void SwapMapObjectsById(int firstMapObjectId, int secondMapObjectId) {
+            int firstMapObjectIndex = this.MapObjDictionary.FindIndex(kvp => kvp.Key == firstMapObjectId);
+            int secondMapObjectIndex = this.MapObjDictionary.FindIndex(kvp => kvp.Key == secondMapObjectId);
             (this.MapObjDictionary[secondMapObjectIndex], this.MapObjDictionary[firstMapObjectIndex])
                 = (this.MapObjDictionary[firstMapObjectIndex], this.MapObjDictionary[secondMapObjectIndex]);
         }
