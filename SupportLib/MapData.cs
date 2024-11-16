@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Runtime.Serialization.Formatters.Binary;
+using DotSpatial.Projections;
 
 namespace SupportLib
 {
@@ -11,6 +12,7 @@ namespace SupportLib
         public List<KeyValuePair<int, List<MapPoint>>> MapObjDictionary { get; set; }
         public string FileName { get; set; } = string.Empty;
         public int Count => GetAllVertices().Count;
+        public int ObjectsCount => this.MapObjDictionary.Count;
         public string ColorName { get;  set; }
         public GeometryType Geometry {  get; set; }
 
@@ -18,6 +20,15 @@ namespace SupportLib
         {
             MapObjDictionary = new List<KeyValuePair<int, List<MapPoint>>>();
             ColorName = Colors.GetNext();
+        }
+
+        public MapData Copy()
+        {
+            return  new()
+            {
+                MapObjDictionary = new List<KeyValuePair<int, List<MapPoint>>>(this.MapObjDictionary),
+                ColorName = this.ColorName.Copy()
+            };
         }
 
         public MapData(GeometryType type) :this()
@@ -98,6 +109,7 @@ namespace SupportLib
 
         public List<MapPoint> First() => this.MapObjDictionary[0].Value;
         public int FirstObjectId() => this.MapObjDictionary[0].Key;
+        public void Remove(int index) => this.MapObjDictionary.RemoveAt(this.MapObjDictionary.FindIndex(kvp => kvp.Key == index));
 
         public void SwapMapObjects(int firstMapObjectIndex, int secondMapObjectIndex) {
             (this.MapObjDictionary[secondMapObjectIndex], this.MapObjDictionary[firstMapObjectIndex])
