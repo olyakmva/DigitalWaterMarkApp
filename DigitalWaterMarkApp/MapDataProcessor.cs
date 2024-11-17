@@ -413,7 +413,7 @@ namespace DigitalWaterMarkApp {
         /// <exception cref="ArgumentException"></exception>
         private static long GCDOfList(List<int> numbers) {
             if (numbers == null || numbers.Count == 0)
-                throw new ArgumentException("Список не может быть пустым");
+                return 1;
 
             BigInteger gcdResult = numbers[0];
 
