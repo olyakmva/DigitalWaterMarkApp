@@ -24,9 +24,7 @@ class Program {
 
     public static void Main() {
 
-        // var shpFiles = ScanFolder("../Data/");
-
-        MapData mapData = ShapeFileIO.Open("../Data/DataForDescriptor/Init16K/hdrLine1000i.shp");
+        MapData mapData = ShapeFileIO.Open("C:\\Users\\Heimerdinger\\Documents\\Repositories\\DigitalWaterMarkApp\\Data\\DataForDescriptor\\Init16K\\hdrLine1000i.shp");
         List<KeyValuePair<int, List<MapPoint>>> objectList = mapData.MapObjDictionary;
         Console.WriteLine(string.Format("Objects count in map: {0}", objectList.Count));
 
@@ -65,10 +63,10 @@ class Program {
         var waterMarkFromLoopingInShufflingMapData = MapDataProcessor.FindWMDecimalFromLoopingsInMapData(shufflingAttackResult.shufflingMapData);
         PrintWaterMark(waterMarkFromLoopingInShufflingMapData);
 
-        // Console.WriteLine("-------- ↓ FROM EXTRACTED ↓ -----------");
+        Console.WriteLine("-------- ↓ FROM EXTRACTED ↓ -----------");
 
-        // var mapDataWithWaterMark = mapDataProcessor.WaterMarkEmbedding(mapData);
-        // var extractedWM = MapDataProcessor.WaterMarkExtracting(mapDataWithWaterMark, waterMark.Length);
-        // PrintWaterMark(extractedWM);
+        var mapDataWithWaterMark = mapDataProcessor.WaterMarkEmbedding(mapData);
+        var extractedWM = MapDataProcessor.WaterMarkExtracting(mapDataWithWaterMark, waterMark.Length);
+        Console.WriteLine(string.Join(' ', extractedWM.Select(i => i.ToString())));
     }
 }
