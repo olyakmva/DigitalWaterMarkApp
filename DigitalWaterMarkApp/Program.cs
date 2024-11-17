@@ -15,7 +15,7 @@ class Program {
 
     public static void Main() {
 
-        MapData mapData = ShapeFileIO.Open("../Data/DataForDescriptor/Init16K/hdrLine1000i.shp");
+        MapData mapData = ShapeFileIO.Open("C:\\Users\\Heimerdinger\\Documents\\Repositories\\DigitalWaterMarkApp\\Data\\DataForDescriptor\\Init16K\\hdrLine1000i.shp");
         List<KeyValuePair<int, List<MapPoint>>> objectList = mapData.MapObjDictionary;
         Console.WriteLine(string.Format("Objects count in map: {0}", objectList.Count));
 
@@ -28,7 +28,7 @@ class Program {
         MapDataProcessor mapDataProcessor = new(waterMark);
         mapDataProcessor.WaterMarkEmbeddingViaLoopingDuplicateOfPoints(mapData);
 
-        ShapeFileIO.Save("../Data/DataForDescriptor/Init16K/hdrLine1000i_new.shp", mapData);
+        //ShapeFileIO.Save("../Data/DataForDescriptor/Init16K/hdrLine1000i_new.shp", mapData);
 
         Console.WriteLine("-------- ↓ FROM LOOPING ↓ -----------");
         var waterMarkFromLooping = MapDataProcessor.FindWMDecimalFromLoopingsInMapData(mapData);
