@@ -214,20 +214,20 @@ namespace DigitalWaterMarkApp {
         /// <param name="mapData">Объект карты</param>
         public void WaterMarkEmbeddingViaLoopingDuplicateOfPoints(MapData mapData) {
             var maximumPossibleWMvalue = MaxObjectSizeInMapData(mapData);
-            long wmDecimal = this.waterMark.ConvertToDecimal();
+            var wmDecimal = this.waterMark.ConvertToDecimal();
 
             foreach (var mapObject in mapData) {
                 int objectId = mapObject.Key;
                 int countPointsInObject = mapObject.Value.Count;
 
-                long periodAsPosition;
+                int periodAsPosition;
                 if (wmDecimal > maximumPossibleWMvalue) {
-                    periodAsPosition = wmDecimal % countPointsInObject;
+                    periodAsPosition = (int) (wmDecimal % countPointsInObject);
                 } else {
-                    periodAsPosition = countPointsInObject % wmDecimal;
+                    periodAsPosition = (int) (countPointsInObject % wmDecimal);
                 }
 
-                LoopDuplicatingPointsAtIndex((int) periodAsPosition, objectId, mapData);
+                LoopDuplicatingPointsAtIndex(periodAsPosition, objectId, mapData);
             }
         }
 
@@ -272,7 +272,7 @@ namespace DigitalWaterMarkApp {
                 var countPointsBeforeLoopingArray = equationProps.Select(propItem => propItem.countPointsBeforeLooping).ToArray();
                 var loopingPositionArray = equationProps.Select(propItem => propItem.loopingPosition).ToArray();
 
-                long WMViaCRT = ChineseRemainderTheorem(countPointsBeforeLoopingArray, loopingPositionArray);
+                BigInteger WMViaCRT = ChineseRemainderTheorem(countPointsBeforeLoopingArray, loopingPositionArray);
                 return WaterMark.ConvertToWaterMark(WMViaCRT);
             }
 
@@ -429,7 +429,7 @@ namespace DigitalWaterMarkApp {
         /// <summary>
         /// Метод реализующий алгоритм китайской теоремы об остатках
         /// </summary>
-        private static long ChineseRemainderTheorem(int[] A, int[] B) {
+        private static BigInteger ChineseRemainderTheorem(int[] A, int[] B) {
             if (A.Length != B.Length)
                 throw new ArgumentException("The lengths of A and B must be the same.");
 
@@ -441,18 +441,18 @@ namespace DigitalWaterMarkApp {
                 long ai = A[i];
                 long bi = B[i];
                 BigInteger Mi = M / ai;
-                long yi = ModularInverse(Mi, ai);
+                BigInteger yi = ModularInverse(Mi, ai);
 
                 x += bi * Mi * yi;
             }
 
-            return (long) (x % M);
+            return x % M;
         }
 
         /// <summary>
         /// Метод реализующий алгоритм поиска обратного модульного элемента
         /// </summary>
-        private static long ModularInverse(BigInteger a, BigInteger m) {
+        private static BigInteger ModularInverse(BigInteger a, BigInteger m) {
             BigInteger gcd = ExtendedGCD(a, m, out BigInteger x, out BigInteger y);
 
             if (gcd != 1) {
@@ -460,7 +460,7 @@ namespace DigitalWaterMarkApp {
             }
 
             var inverseItem = (x % m + m) % m;
-            return (long) inverseItem;
+            return inverseItem;
         }
     }
 }
