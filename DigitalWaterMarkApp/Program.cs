@@ -28,7 +28,7 @@ class Program {
         List<KeyValuePair<int, List<MapPoint>>> objectList = mapData.MapObjDictionary;
         Console.WriteLine(string.Format("Objects count in map: {0}", objectList.Count));
 
-        long test = 69;
+        string test = "HEIMERDINGER";
 
         Console.WriteLine("-------- ↓ ORIGINAL ↓ -----------");
         WaterMark waterMark = WaterMark.ConvertToWaterMark(test);
@@ -40,11 +40,12 @@ class Program {
         Console.WriteLine("-------- ↓ FROM LOOPING ↓ -----------");
         var waterMarkFromLooping = MapDataProcessor.FindWMDecimalFromLoopingsInMapData(mapData);
         PrintWaterMark(waterMarkFromLooping);
+        Console.WriteLine(waterMarkFromLooping.ToSecretCode());
 
         List<IAttackReproducer> attackReproducers = new() { new DroppingAttackReproducer(), new ShufflingAttackReproducer() };
         foreach (var attackReproducer in attackReproducers) {
             var t = attackReproducer.GetName();
-            var s ="";
+            // TODO: reproducers running
         }
 
         Console.WriteLine("-------- ↓ TESTING DROP ATTACK ↓ -----------");
@@ -55,6 +56,7 @@ class Program {
             Console.WriteLine(string.Format("Objects count in map: {0}", percentOfMapData.ObjectsCount));
             var waterMarkFromLoopingInPercentMapData = MapDataProcessor.FindWMDecimalFromLoopingsInMapData(percentOfMapData);
             PrintWaterMark(waterMarkFromLoopingInPercentMapData);
+            Console.WriteLine(waterMarkFromLoopingInPercentMapData.ToSecretCode());
         }
 
         Console.WriteLine("-------- ↓ TESTING SHUFFLE ATTACK ↓ -----------");
@@ -62,6 +64,7 @@ class Program {
         Console.WriteLine(string.Format("Similiar objects percentage: {0}", shufflingAttackResult.similiarObjectsPercentage));
         var waterMarkFromLoopingInShufflingMapData = MapDataProcessor.FindWMDecimalFromLoopingsInMapData(shufflingAttackResult.shufflingMapData);
         PrintWaterMark(waterMarkFromLoopingInShufflingMapData);
+        Console.WriteLine(waterMarkFromLoopingInShufflingMapData.ToSecretCode());
 
         Console.WriteLine("-------- ↓ FROM EXTRACTED ↓ -----------");
 
