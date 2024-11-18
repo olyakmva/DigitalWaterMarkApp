@@ -28,7 +28,7 @@ class Program {
         List<KeyValuePair<int, List<MapPoint>>> objectList = mapData.MapObjDictionary;
         Console.WriteLine(string.Format("Objects count in map: {0}", objectList.Count));
 
-        string test = "HEIMERDINGER";
+        string test = "HEIMERDINGER"; 
 
         Console.WriteLine("-------- ↓ ORIGINAL ↓ -----------");
         WaterMark waterMark = WaterMark.ConvertToWaterMark(test);
