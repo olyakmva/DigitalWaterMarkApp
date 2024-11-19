@@ -4,12 +4,11 @@ using SupportLib;
 
 namespace DigitalWaterMarkApp.AttackReproducer.Reproducers {
 
-   public class ShufflingAttackReproducer : IAttackReproducer {
+    public class ShufflingAttackReproducer : AttackReproducerBase {
 
-      public MapData RunAttack(MapData mapData, Dictionary<string, object> parameters) {
+      public override MapData RunAttack(MapData mapData, Dictionary<string, object> parameters) {
 
-         MapData mapDataCopy =  new()
-         {
+         MapData mapDataCopy =  new() {
             MapObjDictionary = new List<KeyValuePair<int, List<MapPoint>>>(mapData.MapObjDictionary),
             ColorName = mapData.ColorName.Copy()
          };

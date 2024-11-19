@@ -2,6 +2,7 @@
 // Для пакетной обработки
 //using DotSpatial.Data;
 using DigitalWaterMarkApp;
+using DigitalWaterMarkApp.AttackReproducer;
 using DigitalWaterMarkApp.AttackReproducer.Reproducers;
 using SupportLib;
 
@@ -42,34 +43,32 @@ class Program {
         PrintWaterMark(waterMarkFromLooping);
         Console.WriteLine(waterMarkFromLooping.ToSecretCode());
 
-        List<IAttackReproducer> attackReproducers = new() { new DroppingAttackReproducer(), new ShufflingAttackReproducer() };
-        foreach (var attackReproducer in attackReproducers) {
-            var t = attackReproducer.GetName();
-            // TODO: reproducers running
-        }
-
-        Console.WriteLine("-------- ↓ TESTING DROP ATTACK ↓ -----------");
+        DroppingAttackReproducer droppingAttackReproducer = new();
         List<float> percentages = new() { 0.3F, 0.5F, 0.7F, 0.85F, 0.9F, 0.95F };
         foreach (var percentage in percentages) {
-            Console.WriteLine(string.Format("-------- ↓ FROM {0}% ↓ -----------", (int) ((1 - percentage) * 100)));
-            var percentOfMapData = AttackRepropducer.DropRandomPercentageOfData(percentage, mapData);
-            Console.WriteLine(string.Format("Objects count in map: {0}", percentOfMapData.ObjectsCount));
+            var percentOfMapData = droppingAttackReproducer.Run(mapData, new Dictionary<string, object> { { "percentage", percentage } });
+            
             var waterMarkFromLoopingInPercentMapData = MapDataProcessor.FindWMDecimalFromLoopingsInMapData(percentOfMapData);
             PrintWaterMark(waterMarkFromLoopingInPercentMapData);
             Console.WriteLine(waterMarkFromLoopingInPercentMapData.ToSecretCode());
         }
 
-        Console.WriteLine("-------- ↓ TESTING SHUFFLE ATTACK ↓ -----------");
-        var shufflingAttackResult = AttackRepropducer.ShuffleObjectsInMap(mapData);
-        Console.WriteLine(string.Format("Similiar objects percentage: {0}", shufflingAttackResult.similiarObjectsPercentage));
-        var waterMarkFromLoopingInShufflingMapData = MapDataProcessor.FindWMDecimalFromLoopingsInMapData(shufflingAttackResult.shufflingMapData);
-        PrintWaterMark(waterMarkFromLoopingInShufflingMapData);
-        Console.WriteLine(waterMarkFromLoopingInShufflingMapData.ToSecretCode());
 
-        Console.WriteLine("-------- ↓ FROM EXTRACTED ↓ -----------");
+        //Console.WriteLine("-------- ↓ TESTING DROP ATTACK ↓ -----------");
 
-        var mapDataWithWaterMark = mapDataProcessor.WaterMarkEmbedding(mapData);
-        var extractedWM = MapDataProcessor.WaterMarkExtracting(mapDataWithWaterMark, waterMark.Length);
-        Console.WriteLine(string.Join(' ', extractedWM.Select(i => i.ToString())));
+
+
+        //Console.WriteLine("-------- ↓ TESTING SHUFFLE ATTACK ↓ -----------");
+        //var shufflingAttackResult = AttackRepropducer.ShuffleObjectsInMap(mapData);
+        //Console.WriteLine(string.Format("Similiar objects percentage: {0}", shufflingAttackResult.similiarObjectsPercentage));
+        //var waterMarkFromLoopingInShufflingMapData = MapDataProcessor.FindWMDecimalFromLoopingsInMapData(shufflingAttackResult.shufflingMapData);
+        //PrintWaterMark(waterMarkFromLoopingInShufflingMapData);
+        //Console.WriteLine(waterMarkFromLoopingInShufflingMapData.ToSecretCode());
+
+        //Console.WriteLine("-------- ↓ FROM EXTRACTED ↓ -----------");
+
+        //var mapDataWithWaterMark = mapDataProcessor.WaterMarkEmbedding(mapData);
+        //var extractedWM = MapDataProcessor.WaterMarkExtracting(mapDataWithWaterMark, waterMark.Length);
+        //Console.WriteLine(string.Join(' ', extractedWM.Select(i => i.ToString())));
     }
 }

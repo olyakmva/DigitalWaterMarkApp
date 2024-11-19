@@ -49,7 +49,7 @@ namespace DigitalWaterMarkApp {
             int k = random.Next(n + 1);
             mapDataCopy.SwapMapObjectsById(mapDataObjectIds[k], mapDataObjectIds[n]);
          }
-
+         
          float similiarObjectsCount = 0;
          for (int i = 0; i < mapData.ObjectsCount; i++) {
             var mapDataObjectId = mapData.MapObjDictionary[i].Key;
