@@ -267,13 +267,25 @@ namespace DigitalWaterMarkApp {
             // ...
             // x mod B_{n} ≡ A_{n}
             if (WMViaDifferences == 1) {
-                var equationProps = FindPairwiseMutuallyPrimeNumbers(FindAllEquationPropsInLayers(mapData));
-
+                var equationProps = FindAllEquationPropsInLayers(mapData); 
                 var countPointsBeforeLoopingArray = equationProps.Select(propItem => propItem.countPointsBeforeLooping).ToArray();
                 var loopingPositionArray = equationProps.Select(propItem => propItem.loopingPosition).ToArray();
 
-                BigInteger WMViaCRT = ChineseRemainderTheorem(countPointsBeforeLoopingArray, loopingPositionArray);
-                return WaterMark.ConvertToWaterMark(WMViaCRT);
+                var pairwiseMutuallyPrime_EquationProps = FindPairwiseMutuallyPrimeNumbers(equationProps);
+                var pairwiseMutuallyPrime_countPointsBeforeLoopingArray = pairwiseMutuallyPrime_EquationProps.Select(propItem => propItem.countPointsBeforeLooping).ToArray();
+                var pairwiseMutuallyPrime_loopingPositionArray = pairwiseMutuallyPrime_EquationProps.Select(propItem => propItem.loopingPosition).ToArray();
+
+                BigInteger WMViaCRT = ChineseRemainderTheorem(
+                    pairwiseMutuallyPrime_countPointsBeforeLoopingArray, 
+                    pairwiseMutuallyPrime_loopingPositionArray
+                );
+
+                BigInteger WMViaSeqSub = SequentialSubstitutionMethod(
+                    countPointsBeforeLoopingArray, 
+                    loopingPositionArray
+                );
+
+                return WaterMark.ConvertToWaterMark(WMViaSeqSub);
             }
 
             return WaterMark.ConvertToWaterMark(WMViaDifferences);
@@ -354,7 +366,7 @@ namespace DigitalWaterMarkApp {
                 int currentNumber = equationProps[i].countPointsBeforeLooping;
                 for (int j = i + 1; j < equationProps.Count; j++) {
                     int nextNumber = equationProps[j].countPointsBeforeLooping;
-                    if (ExtendedGCD(currentNumber, nextNumber, out BigInteger _, out BigInteger _) != 1) {
+                    if (ExtendedGCD(currentNumber, nextNumber, out _, out _) != 1) {
                         equationProps.RemoveAt(j--);
                     }
                 }
@@ -418,7 +430,7 @@ namespace DigitalWaterMarkApp {
             BigInteger gcdResult = numbers[0];
 
             for (int i = 1; i < numbers.Count; i++) {
-                gcdResult = ExtendedGCD(gcdResult, numbers[i], out BigInteger _, out BigInteger _);
+                gcdResult = ExtendedGCD(gcdResult, numbers[i], out _, out _);
                 if (gcdResult == 1)
                     return 1;
             }
@@ -461,6 +473,24 @@ namespace DigitalWaterMarkApp {
 
             var inverseItem = (x % m + m) % m;
             return inverseItem;
+        }
+
+        private static BigInteger SequentialSubstitutionMethod(int[] A, int[] B) {
+            BigInteger x = B[0];
+            BigInteger lcm = A[0];
+
+            for (int i = 1; i < A.Length; i++) {
+                while (x % A[i] != B[i]) {
+                    x += lcm;
+                }
+                lcm = LCM(lcm, A[i]);
+            }
+
+            return x;
+        }
+
+        private static BigInteger LCM(BigInteger a, BigInteger b) {
+            return (a / ExtendedGCD(a, b, out _, out _)) * b;
         }
     }
 }

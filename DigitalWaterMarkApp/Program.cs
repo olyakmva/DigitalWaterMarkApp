@@ -27,7 +27,7 @@ class Program {
         List<KeyValuePair<int, List<MapPoint>>> objectList = mapData.MapObjDictionary;
         Console.WriteLine(string.Format("Число объектов: {0}", objectList.Count));
 
-        string test = "HEIMER"; 
+        string test = "DIPLOM"; 
 
         Console.WriteLine("-------- ↓ Исходный ЦВЗ ↓ -----------");
         WaterMark waterMark = WaterMark.ConvertToWaterMark(test);
@@ -42,7 +42,7 @@ class Program {
         Console.WriteLine(waterMarkFromLooping.ToSecretCode());
 
         Console.WriteLine("-------- ↓ Случайное удаление объектов ↓ -----------");
-        List<float> percentages = new() { 0.3F, 0.5F, 0.7F, 0.85F, 0.9F, 0.95F };
+        List<float> percentages = new() { 0.5F, 0.55F, 0.6F, 0.65F, 0.7F, 0.85F, 0.9F, 0.95F };
         foreach (var percentage in percentages) {
             Console.WriteLine(string.Format("-------- ↓ Процент удаления {0}% ↓ -----------", (int) (percentage * 100)));
             var percentOfMapData = AttackRepropducer.DropRandomPercentageOfData(percentage, mapData);
