@@ -11,6 +11,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SupportLib", "SupportLib\Su
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KeyPointApp", "KeyPointApp\KeyPointApp.csproj", "{8E8BB702-3996-45F5-BC8B-448A0397B5E6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DigitalWaterMarkAppXUnit", "DigitalWaterMarkAppXUnit\DigitalWaterMarkAppXUnit.csproj", "{D64CB71D-87BF-48EB-BCFB-8F4194B59C16}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{8E8BB702-3996-45F5-BC8B-448A0397B5E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8E8BB702-3996-45F5-BC8B-448A0397B5E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8E8BB702-3996-45F5-BC8B-448A0397B5E6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D64CB71D-87BF-48EB-BCFB-8F4194B59C16}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D64CB71D-87BF-48EB-BCFB-8F4194B59C16}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D64CB71D-87BF-48EB-BCFB-8F4194B59C16}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D64CB71D-87BF-48EB-BCFB-8F4194B59C16}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
