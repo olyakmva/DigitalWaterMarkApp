@@ -4,7 +4,7 @@ using SupportLib;
 namespace DigitalWaterMarkApp {
 
     /// <summary>
-    /// Класс обработчик карты
+    /// Класс обработчик слоя карты
     /// </summary>
     public class MapDataProcessor {
         private WaterMark waterMark;
@@ -177,7 +177,7 @@ namespace DigitalWaterMarkApp {
             // меньшим чем значение максимума в 1 не происходило ошибок при решении систем
             maximumPossibleWMvalue -= 2;
 
-            Console.WriteLine(string.Format("Max possible watermark value: {0}, min: {1}", maximumPossibleWMvalue, minimumPossibleWMvalue));
+            //Console.WriteLine(string.Format("Max possible watermark value: {0}, min: {1}", maximumPossibleWMvalue, minimumPossibleWMvalue));
             return maximumPossibleWMvalue;
         }
 
@@ -275,10 +275,10 @@ namespace DigitalWaterMarkApp {
                 var pairwiseMutuallyPrime_countPointsBeforeLoopingArray = pairwiseMutuallyPrime_EquationProps.Select(propItem => propItem.countPointsBeforeLooping).ToArray();
                 var pairwiseMutuallyPrime_loopingPositionArray = pairwiseMutuallyPrime_EquationProps.Select(propItem => propItem.loopingPosition).ToArray();
 
-                BigInteger WMViaCRT = ChineseRemainderTheorem(
-                    pairwiseMutuallyPrime_countPointsBeforeLoopingArray, 
-                    pairwiseMutuallyPrime_loopingPositionArray
-                );
+                //BigInteger WMViaCRT = ChineseRemainderTheorem(
+                //    pairwiseMutuallyPrime_countPointsBeforeLoopingArray, 
+                //    pairwiseMutuallyPrime_loopingPositionArray
+                //);
 
                 BigInteger WMViaSeqSub = SequentialSubstitutionMethod(
                     countPointsBeforeLoopingArray, 
@@ -475,6 +475,14 @@ namespace DigitalWaterMarkApp {
             return inverseItem;
         }
 
+        /// <summary>
+        /// Решает систему сравнений вида x mod B_{i} ≡ A_{i} i=1..N, где N - число объектов карты,
+        /// A_{i} - период дублирования точек, B_{i} - исходный размер объекта, 
+        /// путем последовательного решения пары сравнений и подстановки результата в следующее. 
+        /// Несколько эффективнее чем КТО, поскольку не требует выполнения условия взаимо-простоты модулей
+        /// </summary>
+        /// <param name="A">Список модулей</param>
+        /// <param name="B">Список остатков</param>
         private static BigInteger SequentialSubstitutionMethod(int[] A, int[] B) {
             BigInteger x = B[0];
             BigInteger lcm = A[0];
@@ -483,13 +491,16 @@ namespace DigitalWaterMarkApp {
                 while (x % A[i] != B[i]) {
                     x += lcm;
                 }
-                lcm = LCM(lcm, A[i]);
+                lcm = LeastCommonMultiple(lcm, A[i]);
             }
 
             return x;
         }
 
-        private static BigInteger LCM(BigInteger a, BigInteger b) {
+        /// <summary>
+        /// Наименьшее общее кратное
+        /// </summary>
+        private static BigInteger LeastCommonMultiple(BigInteger a, BigInteger b) {
             return (a / ExtendedGCD(a, b, out _, out _)) * b;
         }
     }

@@ -191,14 +191,14 @@ namespace KeyPointApp
         private void Display(Graphics g, MapData md, Pen pen)
         {
             var brush = new SolidBrush(pen.Color);
-            foreach (var list in md.MapObjDictionary.Values)
+            foreach (var list in md.MapObjDictionary)
             {
-                if (list.Count == 0)
+                if (list.Value.Count == 0)
                     continue;
-                for (var j = 0; j < (list.Count - 1); j++)
+                for (var j = 0; j < (list.Value.Count - 1); j++)
                 {
-                    var pt1 = _state.GetPoint(list[j], mapPictureBox.Height - 1);
-                    var pt2 = _state.GetPoint(list[j + 1], mapPictureBox.Height - 1);
+                    var pt1 = _state.GetPoint(list.Value[j], mapPictureBox.Height - 1);
+                    var pt2 = _state.GetPoint(list.Value[j + 1], mapPictureBox.Height - 1);
                     g.FillRectangle(brush, pt1.X, pt1.Y, 2, 2);
                     g.DrawLine(pen, pt1, pt2);
                 }

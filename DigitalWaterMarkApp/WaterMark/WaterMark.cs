@@ -16,6 +16,8 @@ namespace DigitalWaterMarkApp {
         private int size;
         private List<WaterMarkItem> items;
 
+        private static readonly int bitsPerSymbol = 8;
+
         public int Size {
             get => size;
             set => size = value;
@@ -81,9 +83,9 @@ namespace DigitalWaterMarkApp {
         public BigInteger ConvertToDecimal() {
             BitArray bits = new(this.Items.Select(x => x.WMValue > 0).ToArray());
 
-            byte[] bytes = new byte[(bits.Length + 7) / 8];
+            byte[] bytes = new byte[(bits.Length + (bitsPerSymbol - 1)) / bitsPerSymbol];
             bits.CopyTo(bytes, 0);
-
+            
             return new(bytes);
         }
 
@@ -104,10 +106,8 @@ namespace DigitalWaterMarkApp {
 
         private static int GetSizeToNearestSquare(int currentLength) {
             int size = 0;
-            for (int i = 1; i < 100; i++)
-            {
-                if (currentLength <= i * i)
-                {
+            for (int i = 1; i < 100; i++) {
+                if (currentLength <= i * i) {
                     size = i;
                     break;
                 }
@@ -117,8 +117,8 @@ namespace DigitalWaterMarkApp {
 
         public static WaterMark ConvertToWaterMark(string secretCode) {
 
-            byte[] secretCodeInBytes = Encoding.ASCII.GetBytes(secretCode);
-            string[] byteStrings = secretCodeInBytes.Select(_byte => Convert.ToString(_byte, 2).PadLeft(8, '0')).ToArray();
+            byte[] secretCodeInBytes = Encoding.GetEncoding(1251).GetBytes(secretCode);
+            string[] byteStrings = secretCodeInBytes.Select(_byte => Convert.ToString(_byte, 2).PadLeft(bitsPerSymbol, '0')).ToArray();
             string stringOfBits = string.Join("", byteStrings);
             int bigIntegerOfBitsLength = stringOfBits.Length;
             var size = GetSizeToNearestSquare(bigIntegerOfBitsLength);
@@ -132,8 +132,7 @@ namespace DigitalWaterMarkApp {
 
             int currentItem = 0;
             for (int i = 0; i < size; i++) {
-                for (int j = 0; j < size; j++)
-                {
+                for (int j = 0; j < size; j++) {
                     items.Add(new WaterMarkItem(binary[currentItem], i, j));
                     currentItem++;
                 }
@@ -143,31 +142,26 @@ namespace DigitalWaterMarkApp {
         }
 
         public string ToSecretCode() {
-            int[] binary = this.Items.Select(x => x.WMValue).TakeLast(FindNearestMultipleOf8LessThan(this.Items.Count)).ToArray();
+            int[] binary = this.Items.Select(x => x.WMValue).TakeLast(FindNearestMultipleOfBitsPerSymbolLessThan(this.Items.Count)).ToArray();
             string asciiString = "";
 
-            // Перебираем массив по 8 бит
-            for (int i = 0; i < binary.Length; i += 8) {
+            int counter = 0;
+            byte[] bytes = new byte[(binary.Length + (bitsPerSymbol - 1)) / bitsPerSymbol];
+            for (int i = 0; i < binary.Length; i += bitsPerSymbol) {
                 int byteValue = 0;
-
-                // Считываем 8 бит
-                for (int j = 0; j < 8; j++) {
+                for (int j = 0; j < bitsPerSymbol; j++) 
                     byteValue = (byteValue << 1) | binary[i + j]; // Сдвигаем влево и добавляем текущий бит
-                }
-
-                // Преобразуем байт в символ ASCII и добавляем к строке
-                asciiString += (char) byteValue;
+                bytes[counter++] = (byte) byteValue;
             };
 
-            return asciiString;
+            return Encoding.GetEncoding(1251).GetString(bytes);
         }
 
-        static int FindNearestMultipleOf8LessThan(int number) {
-            if (number <= 0) {
+        private int FindNearestMultipleOfBitsPerSymbolLessThan(int number) {
+            if (number <= 0)
                 return 0;
-            }
 
-            return number - (number % 8);
+            return number - (number % bitsPerSymbol);
         }
 
         public int this[int index] {
