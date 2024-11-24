@@ -24,29 +24,22 @@ class Program {
         Console.WriteLine("-------- ↓ Извлечение после встраивания ↓ -----------");
         Console.WriteLine(extractedSecret);
 
-        //Console.WriteLine("-------- ↓ Случайное удаление объектов ↓ -----------");
-        //List<float> percentages = new() { 0.5F, 0.55F, 0.6F, 0.65F, 0.7F, 0.85F, 0.9F, 0.95F };
-        //foreach (var percentage in percentages) {
-        //    Console.WriteLine(string.Format("-------- ↓ Процент удаления {0}% ↓ -----------", (int) (percentage * 100)));
-        //    var percentOfMapData = AttackRepropducer.DropRandomPercentageOfData(percentage, mapData);
-        //    Console.WriteLine(string.Format("Число объектов после удаления: {0}", percentOfMapData.ObjectsCount));
-        //    var waterMarkFromLoopingInPercentMapData = MapDataProcessor.FindWMDecimalFromLoopingsInMapData(percentOfMapData);
-        //    PrintWaterMark(waterMarkFromLoopingInPercentMapData);
-        //    Console.WriteLine(waterMarkFromLoopingInPercentMapData.ToSecretCode());
-        //}
+        Console.WriteLine("-------- ↓ Случайное удаление объектов ↓ -----------");
+        List<float> percentages = new() { 0.5F, 0.55F, 0.6F, 0.65F, 0.7F, 0.85F, 0.9F, 0.95F };
+        foreach (var percentage in percentages) {
+            Map mapCopy = mapWithSecretCode.Clone();
+            Console.WriteLine(string.Format("-------- ↓ Процент удаления {0}% ↓ -----------", (int)(percentage * 100)));
+            foreach (var mapLayer in mapWithSecretCode.MapLayers) {
+                AttackRepropducer.DropRandomPercentageOfData(percentage, mapLayer, true);
+                Console.WriteLine(string.Format("Число объектов после удаления в слое {0}: {1}", mapLayer.FileName, mapLayer.ObjectsCount));
+            }
 
-        //Console.WriteLine("-------- ↓ Случайное перемешивание ↓ -----------");
-        //var shufflingAttackResult = AttackRepropducer.ShuffleObjectsInMap(mapData);
-        //Console.WriteLine(string.Format("Similiar objects percentage: {0}", shufflingAttackResult.similiarObjectsPercentage));
-        //var waterMarkFromLoopingInShufflingMapData = MapDataProcessor.FindWMDecimalFromLoopingsInMapData(shufflingAttackResult.shufflingMapData);
-        //PrintWaterMark(waterMarkFromLoopingInShufflingMapData);
-        //Console.WriteLine(waterMarkFromLoopingInShufflingMapData.ToSecretCode());
-
-        //Console.WriteLine("-------- ↓ Извлечение после встраивания через хэш-функцию ↓ -----------");
-
-        //var mapDataWithWaterMark = mapDataProcessor.WaterMarkEmbedding(mapData);
-        //var extractedWM = MapDataProcessor.WaterMarkExtracting(mapDataWithWaterMark, waterMark.Length);
-        //Console.WriteLine(string.Join(' ', extractedWM.Select(i => i.ToString())));
+            try {
+                Console.WriteLine(MapProcessor.SecretCodeExtracting(mapCopy));
+            } catch (Exception ex) { 
+                Console.WriteLine(ex.Message);
+            }
+        }
 
         Console.ReadKey();
     }

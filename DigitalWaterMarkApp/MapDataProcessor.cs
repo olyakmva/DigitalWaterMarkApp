@@ -285,6 +285,10 @@ namespace DigitalWaterMarkApp {
                     loopingPositionArray
                 );
 
+                if (WMViaSeqSub == 1) {
+                    throw new Exception("ЦВЗ не может быть извлечен из карты");
+                }
+
                 return WaterMark.ConvertToWaterMark(WMViaSeqSub);
             }
 
@@ -484,6 +488,11 @@ namespace DigitalWaterMarkApp {
         /// <param name="A">Список модулей</param>
         /// <param name="B">Список остатков</param>
         private static BigInteger SequentialSubstitutionMethod(int[] A, int[] B) {
+
+            if (A.Length == 0 || B.Length == 0) {
+                return 1;
+            }
+
             BigInteger x = B[0];
             BigInteger lcm = A[0];
 
