@@ -5,7 +5,11 @@ namespace SupportLib
 {
     public static class Converter
     {
-        public static MapData? ToMapData(IFeatureSet fSet)
+        public static MapData? ToMapData(IFeatureSet fSet) {
+            return ToMapData(fSet, null);
+        }
+
+        public static MapData? ToMapData(IFeatureSet fSet, string? fileName)
         {
             var list = fSet.Features;
             if (list.Count == 0)
@@ -34,7 +38,8 @@ namespace SupportLib
 
             var map = new MapData
             {
-                Geometry = type
+                Geometry = type,
+                FileName = fileName ?? string.Empty,
             };
             foreach (var item in list)
             {

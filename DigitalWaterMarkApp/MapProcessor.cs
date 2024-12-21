@@ -10,12 +10,46 @@ using static System.Net.Mime.MediaTypeNames;
 namespace DigitalWaterMarkApp {
     public static class MapProcessor {
 
+        public static List<string> FindDirectoriesWithShpFiles(string directoryPath) {
+            List<string> directoriesWithShp = new();
+
+            try {
+                if (Directory.Exists(directoryPath)) {
+                    string[] subdirectories = Directory.GetDirectories(directoryPath);
+
+                    foreach (string subdirectory in subdirectories) {
+                        string[] files = Directory.GetFiles(subdirectory);
+                        bool hasShp = Array.Exists(files, file => file.EndsWith(".shp", StringComparison.OrdinalIgnoreCase));
+                        if (hasShp) {
+                            directoriesWithShp.Add(subdirectory);
+                        }
+
+                        directoriesWithShp.AddRange(FindDirectoriesWithShpFiles(subdirectory));
+                    }
+                }
+            } catch (Exception ex) {
+                Console.WriteLine(ex.StackTrace);
+            }
+
+            return directoriesWithShp;
+        }
+
+        public static string GetFileNameWithoutExtension(string filePath) {
+            int lastDotIndex = filePath.LastIndexOf('.');
+            if (lastDotIndex > 0) {
+                return filePath.Substring(filePath.LastIndexOf('\\') + 1, lastDotIndex - filePath.LastIndexOf('\\') - 1);
+            }
+
+            return filePath;
+        }
+
         public static Map AnalyzeFolder(string folder) {
             Map map = new();
             string[] shapeFileNames = Directory.GetFiles(folder, "*.shp");
             foreach (string shapeFileName in shapeFileNames) {
+                var fileName = GetFileNameWithoutExtension(shapeFileName);
                 IFeatureSet inputShape = FeatureSet.Open(shapeFileName);
-                var mapData = Converter.ToMapData(inputShape);
+                var mapData = Converter.ToMapData(inputShape, fileName);
                 if (mapData != null) {
                     map.Add(mapData);
                 }
