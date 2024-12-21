@@ -83,6 +83,12 @@ class Program {
             Stopwatch mapFolderProcessingWatch = Stopwatch.StartNew();
 
             Map map = MapProcessor.AnalyzeFolder(mapFolder);
+            LogThis($"Count layers in original map {map.MapLayers.Count}", sw);
+            LogThis($"Count objects in original map {map.MapLayers.Sum(l => l.ObjectsCount)}", sw);
+            LogThis($"Count vertices in original map {map.MapLayers.Sum(l => l.GetAllVertices().Count)}", sw);
+            LogThis($"Original map size {FormatSize(mapFolder)}", sw);
+            LogThis("________________________________________", sw);
+
             foreach (var secretCode in secrets) {
                 LogThis($"Embedding '{secretCode}'...", sw);
                 Stopwatch secretCodeEmbeddingWatch = Stopwatch.StartNew();
@@ -96,6 +102,21 @@ class Program {
                 secretCodeExtractingWatch.Stop();
                 LogThis($"Extracting ended. Running time: {FormatWatchTime(secretCodeExtractingWatch)}", sw);
                 LogThis($"Extracting result {extractedSecret}\n", sw);
+
+                try {
+                    LogThis("Saving map with secret...", sw);
+                    Directory.CreateDirectory($"{resultFolder}/secret");
+                    foreach (var mapLayer in mapWithSecretCode.MapLayers)
+                        ShapeFileIO.Save($"{resultFolder}/secret/{mapLayer.FileName}", mapLayer);
+                } catch (Exception ex) {
+                    LogThis($"Saving map with secret failed: {ex.Message}: {ex}", sw);
+                }
+
+                LogThis($"Count layers in map with secret {mapWithSecretCode.MapLayers.Count}", sw);
+                LogThis($"Count objects in map with secret {mapWithSecretCode.MapLayers.Sum(l => l.ObjectsCount)}", sw);
+                LogThis($"Count vertices in map with secret {mapWithSecretCode.MapLayers.Sum(l => l.GetAllVertices().Count)}", sw);
+                LogThis($"Map with secret size {FormatSize($"{resultFolder}/secret")}", sw);
+                LogThis("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n", sw);
 
                 LogThis($"Begin running deletion attacks for secret '{secretCode}'...", sw);
                 Stopwatch allDeletionAttacksWatch = Stopwatch.StartNew();
@@ -112,16 +133,18 @@ class Program {
 
                     try {
                         LogThis("Saving map after attack...", sw);
+                        Directory.CreateDirectory($"{resultFolder}/{deletionNormalizedPercentage}");
                         foreach (var mapLayer in mapWithSecretCode.MapLayers)
-                            ShapeFileIO.Save($"{resultFolder}/{mapLayer.FileName}_{deletionNormalizedPercentage}.shp", mapLayer);
+                            ShapeFileIO.Save($"{resultFolder}/{deletionNormalizedPercentage}/{mapLayer.FileName}", mapLayer);
                     } catch (Exception ex) {
                         LogThis($"Saving map after attack failed: {ex.Message}: {ex}", sw);
                     }
 
+                    mapCopy = MapProcessor.AnalyzeFolder($"{resultFolder}/{deletionNormalizedPercentage}");
                     LogThis($"Count layers {mapCopy.MapLayers.Count}", sw);
                     LogThis($"Count objects {mapCopy.MapLayers.Sum(l => l.ObjectsCount)}", sw);
                     LogThis($"Count vertices {mapCopy.MapLayers.Sum(l => l.GetAllVertices().Count)}", sw);
-                    LogThis($"Map size {FormatSize(resultFolder)}", sw);
+                    LogThis($"Map size {FormatSize($"{resultFolder}/{deletionNormalizedPercentage}")}", sw);
 
                     try {
                         LogThis($"Extracting after deletion {deletionNormalizedPercentage}% vertices...", sw);
@@ -133,7 +156,7 @@ class Program {
                     } catch (Exception ex) {
                         LogThis($"Extracting after deletion failed: {ex.Message}: {ex}", sw);
                     }
-                    LogThis("\n", sw);
+                    LogThis("", sw);
                 }
                 allDeletionAttacksWatch.Stop();
                 LogThis($"All running deletion attacks for secret '{secretCode}' ended. Running time: {FormatWatchTime(allDeletionAttacksWatch)}", sw);
