@@ -59,7 +59,7 @@ namespace SupportLib
                     var p = new MapPoint(shape.Vertices[t], shape.Vertices[t+1], fid, 1.0);
                     points.Add(p);
                 }
-                map.MapObjDictionary.Add(new KeyValuePair<int, List<MapPoint>>(fid, points));
+                map.MapObjDictionary.Add(fid, points);
             }
             return map;
         }

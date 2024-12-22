@@ -71,6 +71,10 @@ namespace DigitalWaterMarkApp {
 
         private static string FindCommonWord(List<(int objectsDiversity, string secret)> words) {
 
+            if (words.Count == 0) {
+                return "";
+            }
+
             words.Sort((s1, s2) => s2.objectsDiversity - s1.objectsDiversity);
             HashSet<string> zeroMatches = new();
             for (int i = 0; i < words.Count - 1; i++) {
@@ -105,9 +109,11 @@ namespace DigitalWaterMarkApp {
 
             List<(int objectsDiversity, string secret)> secrets = new();
             foreach (MapData layer in map.MapLayers) {
-                var secret = MapDataProcessor.FindWMDecimalFromLoopingsInMapData(layer).ToSecretCode();
-                var objectsDiversity = layer.MapObjDictionary.Select(mapObject => mapObject.Value.Count).Distinct().Count();
-                secrets.Add((objectsDiversity, secret));
+                for (int i = 0; i < 50; i++) {
+                    var secret = MapDataProcessor.FindWMDecimalFromLoopingsInMapData(layer).ToSecretCode();
+                    var objectsDiversity = layer.MapObjDictionary.Select(mapObject => mapObject.Value.Count).Distinct().Count();
+                    secrets.Add((objectsDiversity, secret));
+                }
             }
 
             return FindCommonWord(secrets);

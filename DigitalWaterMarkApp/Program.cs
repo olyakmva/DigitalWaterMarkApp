@@ -68,7 +68,7 @@ class Program {
     };
 
     private static List<float> percentages = new() { 
-        0.5F, 0.55F, 0.6F, 0.65F, 0.7F, 0.85F, 0.9F, 0.95F 
+        0.3F, 0.4F, 0.5F, 0.55F, 0.6F, 0.65F, 0.7F, 0.85F, 0.9F, 0.95F 
     };
 
     public static void Main() {
@@ -105,9 +105,11 @@ class Program {
 
                 try {
                     LogThis("Saving map with secret...", sw);
-                    Directory.CreateDirectory($"{resultFolder}/secret");
-                    foreach (var mapLayer in mapWithSecretCode.MapLayers)
-                        ShapeFileIO.Save($"{resultFolder}/secret/{mapLayer.FileName}", mapLayer);
+                     Directory.CreateDirectory($"{resultFolder}/secret");
+                    foreach (var mapLayer in mapWithSecretCode.MapLayers) {
+                        Directory.CreateDirectory($"{resultFolder}/secret/{secretCode.Replace(" ", "_")}");
+                        ShapeFileIO.Save($"{resultFolder}/secret/{secretCode.Replace(" ", "_")}/{mapLayer.FileName}", mapLayer);
+                    }
                 } catch (Exception ex) {
                     LogThis($"Saving map with secret failed: {ex.Message}: {ex}", sw);
                 }
@@ -115,7 +117,7 @@ class Program {
                 LogThis($"Count layers in map with secret {mapWithSecretCode.MapLayers.Count}", sw);
                 LogThis($"Count objects in map with secret {mapWithSecretCode.MapLayers.Sum(l => l.ObjectsCount)}", sw);
                 LogThis($"Count vertices in map with secret {mapWithSecretCode.MapLayers.Sum(l => l.GetAllVertices().Count)}", sw);
-                LogThis($"Map with secret size {FormatSize($"{resultFolder}/secret")}", sw);
+                LogThis($"Map with secret size {FormatSize($"{resultFolder}/secret/{secretCode.Replace(" ", "_")}")}", sw);
                 LogThis("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n", sw);
 
                 LogThis($"Begin running deletion attacks for secret '{secretCode}'...", sw);
@@ -134,17 +136,19 @@ class Program {
                     try {
                         LogThis("Saving map after attack...", sw);
                         Directory.CreateDirectory($"{resultFolder}/{deletionNormalizedPercentage}");
-                        foreach (var mapLayer in mapWithSecretCode.MapLayers)
-                            ShapeFileIO.Save($"{resultFolder}/{deletionNormalizedPercentage}/{mapLayer.FileName}", mapLayer);
+                        foreach (var mapLayer in mapWithSecretCode.MapLayers) {
+                            Directory.CreateDirectory($"{resultFolder}/{deletionNormalizedPercentage}/{secretCode.Replace(" ", "_")}");
+                            ShapeFileIO.Save($"{resultFolder}/{deletionNormalizedPercentage}/{secretCode.Replace(" ", "_")}/{mapLayer.FileName}", mapLayer);
+                        }
                     } catch (Exception ex) {
                         LogThis($"Saving map after attack failed: {ex.Message}: {ex}", sw);
                     }
 
-                    mapCopy = MapProcessor.AnalyzeFolder($"{resultFolder}/{deletionNormalizedPercentage}");
+                    mapCopy = MapProcessor.AnalyzeFolder($"{resultFolder}/{deletionNormalizedPercentage}/{secretCode.Replace(" ", "_")}");
                     LogThis($"Count layers {mapCopy.MapLayers.Count}", sw);
                     LogThis($"Count objects {mapCopy.MapLayers.Sum(l => l.ObjectsCount)}", sw);
                     LogThis($"Count vertices {mapCopy.MapLayers.Sum(l => l.GetAllVertices().Count)}", sw);
-                    LogThis($"Map size {FormatSize($"{resultFolder}/{deletionNormalizedPercentage}")}", sw);
+                    LogThis($"Map size {FormatSize($"{resultFolder}/{deletionNormalizedPercentage}/{secretCode.Replace(" ", "_")}")}", sw);
 
                     try {
                         LogThis($"Extracting after deletion {deletionNormalizedPercentage}% vertices...", sw);

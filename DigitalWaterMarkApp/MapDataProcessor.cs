@@ -1,3 +1,4 @@
+using System;
 using System.Numerics;
 using SupportLib;
 
@@ -39,9 +40,9 @@ namespace DigitalWaterMarkApp {
 
             for (int i = 0; i < mapData.MapObjDictionary.Count - 1; i++)
             {
-                var waterMarkEmbeddingItemIdx = GetHash(mapData.MapObjDictionary[i].Value.Count * mapData.MapObjDictionary[i + 1].Value.Count, this.WaterMark.Length);
+                var waterMarkEmbeddingItemIdx = GetHash(mapData.MapObjDictionary[i].Count * mapData.MapObjDictionary[i + 1].Count, this.WaterMark.Length);
                 var waterMarkEmbeddingItem = this.waterMark[waterMarkEmbeddingItemIdx];
-                var storageDirection = GetMapObjectsStorageDirtection(mapData.MapObjDictionary[i].Value, mapData.MapObjDictionary[i + 1].Value);
+                var storageDirection = GetMapObjectsStorageDirtection(mapData.MapObjDictionary[i], mapData.MapObjDictionary[i + 1]);
 
                 if (waterMarkEmbeddingItem != storageDirection) {
                     mapData.SwapMapObjects(i, i + 1);
@@ -69,8 +70,8 @@ namespace DigitalWaterMarkApp {
             Dictionary<int, List<int>> waterMarkValues = new();
             for (int i = 0; i < mapData.MapObjDictionary.Count - 1; i++)
             {
-                var waterMarkExtractionItemIdx = GetHash(mapData.MapObjDictionary[i].Value.Count * mapData.MapObjDictionary[i + 1].Value.Count, waterMarkLength);
-                var waterMarkExtractionItem = GetMapObjectsStorageDirtection(mapData.MapObjDictionary[i].Value, mapData.MapObjDictionary[i + 1].Value);
+                var waterMarkExtractionItemIdx = GetHash(mapData.MapObjDictionary[i].Count * mapData.MapObjDictionary[i + 1].Count, waterMarkLength);
+                var waterMarkExtractionItem = GetMapObjectsStorageDirtection(mapData.MapObjDictionary[i], mapData.MapObjDictionary[i + 1]);
 
                 if (waterMarkValues.ContainsKey(waterMarkExtractionItemIdx)) {
                     waterMarkValues[waterMarkExtractionItemIdx].Add(waterMarkExtractionItem);
@@ -135,7 +136,7 @@ namespace DigitalWaterMarkApp {
         /// <param name="mapData">Объект карты</param>
         private static void LoopDuplicatingPointsAtIndex(int position, int objectId, MapData mapData) {
 
-            if (position == 0) {
+            if (position <= 1) {
                 return;
             }
 
@@ -267,23 +268,29 @@ namespace DigitalWaterMarkApp {
             // ...
             // x mod B_{n} ≡ A_{n}
             if (WMViaDifferences == 1) {
-                var equationProps = FindAllEquationPropsInLayers(mapData); 
-                var countPointsBeforeLoopingArray = equationProps.Select(propItem => propItem.countPointsBeforeLooping).ToArray();
-                var loopingPositionArray = equationProps.Select(propItem => propItem.loopingPosition).ToArray();
+                var equationProps = FindAllEquationPropsInLayers(mapData).TakeRandomEfficient(200); 
+                var countPointsBeforeLoopingArray = equationProps
+                    .Select(propItem => propItem.countPointsBeforeLooping).ToArray();
+                var loopingPositionArray = equationProps
+                    .Select(propItem => propItem.loopingPosition).ToArray();
 
-                var pairwiseMutuallyPrime_EquationProps = FindPairwiseMutuallyPrimeNumbers(equationProps);
-                var pairwiseMutuallyPrime_countPointsBeforeLoopingArray = pairwiseMutuallyPrime_EquationProps.Select(propItem => propItem.countPointsBeforeLooping).ToArray();
-                var pairwiseMutuallyPrime_loopingPositionArray = pairwiseMutuallyPrime_EquationProps.Select(propItem => propItem.loopingPosition).ToArray();
+                //var pairwiseMutuallyPrime_EquationProps = FindPairwiseMutuallyPrimeNumbers(equationProps);
+                //var pairwiseMutuallyPrime_countPointsBeforeLoopingArray = pairwiseMutuallyPrime_EquationProps.Select(propItem => propItem.countPointsBeforeLooping).ToArray();
+                //var pairwiseMutuallyPrime_loopingPositionArray = pairwiseMutuallyPrime_EquationProps.Select(propItem => propItem.loopingPosition).ToArray();
 
                 //BigInteger WMViaCRT = ChineseRemainderTheorem(
-                //    pairwiseMutuallyPrime_countPointsBeforeLoopingArray, 
+                //    pairwiseMutuallyPrime_countPointsBeforeLoopingArray,
                 //    pairwiseMutuallyPrime_loopingPositionArray
                 //);
 
+                //var s = WaterMark.ConvertToWaterMark(WMViaCRT).ToSecretCode();
+
                 BigInteger WMViaSeqSub = SequentialSubstitutionMethod(
-                    countPointsBeforeLoopingArray, 
+                    countPointsBeforeLoopingArray,
                     loopingPositionArray
                 );
+
+                var t = WaterMark.ConvertToWaterMark(WMViaSeqSub).ToSecretCode();
 
                 if (WMViaSeqSub == 1) {
                     throw new Exception("ЦВЗ не может быть извлечен из карты");
@@ -330,13 +337,27 @@ namespace DigitalWaterMarkApp {
         /// <returns>Искомая разность</returns>
         private static int FindDifferenceForLooping(int objectId, MapData mapData) {
 
-            var props = FindEquationPropsForLayer(objectId, mapData);
+            List<int> loopingIndexes = new();
+            for (int i = 1; i < mapData[objectId].Count; i++) {
+                var previousItem = mapData[objectId][i - 1];
+                var currentItem = mapData[objectId][i];
 
-            if (Math.Min(props.loopingPosition, props.countPointsBeforeLooping) == -1) {
+                if (previousItem.CompareTo(currentItem) == 0) {
+                    loopingIndexes.Add(i - 1);
+                }
+            }
+
+            if (loopingIndexes.Count == 0) {
                 return -1;
             }
 
-            return props.countPointsBeforeLooping - props.loopingPosition;
+            var loopingPosition = loopingIndexes[0] + 1;
+            if (loopingPosition == 1) {
+                return -1;
+            }
+
+            var countPointsBeforeLooping = mapData[objectId].Count - loopingIndexes.Count;
+            return countPointsBeforeLooping - loopingPosition;
         }
 
         /// <summary>
@@ -386,13 +407,11 @@ namespace DigitalWaterMarkApp {
         /// <returns>Список разностей B-A пар (A, B)</returns>
         private static List<int> FindAllDifferencesInLayers(MapData mapData) {
             List<int> mapLayerLoopingDifferences = new();
-            foreach (var mapObject in mapData) {
-                int objectId = mapObject.Key;
-                var currentDefference = FindDifferenceForLooping(objectId, mapData);
-                if (currentDefference != -1) {
-                    mapLayerLoopingDifferences.Add(currentDefference);
-                }
-            }
+
+            mapLayerLoopingDifferences = mapData
+                .Select(l => FindDifferenceForLooping(l.Key, mapData))
+                .Where(x => x != -1).ToList();
+
             return mapLayerLoopingDifferences;
         }
 
@@ -434,9 +453,7 @@ namespace DigitalWaterMarkApp {
             BigInteger gcdResult = numbers[0];
 
             for (int i = 1; i < numbers.Count; i++) {
-                gcdResult = ExtendedGCD(gcdResult, numbers[i], out _, out _);
-                if (gcdResult == 1)
-                    return 1;
+                gcdResult = BigInteger.GreatestCommonDivisor(gcdResult, numbers[i]);
             }
 
             return (long) gcdResult;
@@ -457,7 +474,7 @@ namespace DigitalWaterMarkApp {
                 long ai = A[i];
                 long bi = B[i];
                 BigInteger Mi = M / ai;
-                BigInteger yi = ModularInverse(Mi, ai);
+                ModularInverse(Mi, ai, out BigInteger yi);
 
                 x += bi * Mi * yi;
             }
@@ -468,15 +485,16 @@ namespace DigitalWaterMarkApp {
         /// <summary>
         /// Метод реализующий алгоритм поиска обратного модульного элемента
         /// </summary>
-        private static BigInteger ModularInverse(BigInteger a, BigInteger m) {
+        private static bool ModularInverse(BigInteger a, BigInteger m, out BigInteger inverse) {
             BigInteger gcd = ExtendedGCD(a, m, out BigInteger x, out BigInteger y);
 
             if (gcd != 1) {
-                throw new ArgumentException("Ошибка поиска обратного элемента.");
+                inverse = -1;
+                return false;
             }
 
-            var inverseItem = (x % m + m) % m;
-            return inverseItem;
+            inverse = (x % m + m) % m;
+            return true;
         }
 
         /// <summary>
@@ -497,9 +515,18 @@ namespace DigitalWaterMarkApp {
             BigInteger lcm = A[0];
 
             for (int i = 1; i < A.Length; i++) {
-                while (x % A[i] != B[i]) {
-                    x += lcm;
+                int iterations = 0;
+                BigInteger x_attempt = x;
+                while (x_attempt % A[i] != B[i]) {
+                    if (iterations > 100000) {
+                        break;
+                    }
+
+                    x_attempt += lcm;
+                    iterations++;
                 }
+
+                x = x_attempt;
                 lcm = LeastCommonMultiple(lcm, A[i]);
             }
 
@@ -510,7 +537,7 @@ namespace DigitalWaterMarkApp {
         /// Наименьшее общее кратное
         /// </summary>
         private static BigInteger LeastCommonMultiple(BigInteger a, BigInteger b) {
-            return (a / ExtendedGCD(a, b, out _, out _)) * b;
+            return (a / BigInteger.GreatestCommonDivisor(a, b)) * b;
         }
     }
 }

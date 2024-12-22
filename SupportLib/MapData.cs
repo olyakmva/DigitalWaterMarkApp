@@ -9,7 +9,7 @@ namespace SupportLib
     [Serializable]
     public class MapData : IEnumerable<KeyValuePair<int, List<MapPoint>>>
     {
-        public List<KeyValuePair<int, List<MapPoint>>> MapObjDictionary { get; set; }
+        public Dictionary<int, List<MapPoint>> MapObjDictionary { get; set; }
         public string FileName { get; set; } = string.Empty;
         public int Count => GetAllVertices().Count;
         public int ObjectsCount => this.MapObjDictionary.Count;
@@ -18,7 +18,7 @@ namespace SupportLib
 
         public MapData()
         {
-            MapObjDictionary = new List<KeyValuePair<int, List<MapPoint>>>();
+            MapObjDictionary = new Dictionary<int, List<MapPoint>>();
             ColorName = Colors.GetNext();
         }
 
@@ -84,38 +84,32 @@ namespace SupportLib
                     t.X = t.X * mul_offset + offset;
                     t.Y = t.Y * mul_offset + offset;
                 }
-                result.MapObjDictionary.Add(new KeyValuePair<int, List<MapPoint>>(obj.Key, tmp));
+                result.MapObjDictionary.Add(obj.Key, tmp);
             }
             return result;
         }
 
         public List<MapPoint> this[int index]
         {
-            get => this.MapObjDictionary.First(kvp => kvp.Key == index).Value;
+            get {
+                return this.MapObjDictionary[index];
+            }
             set {
-                int idx = this.MapObjDictionary.FindIndex(kvp => kvp.Key == index);
-                this.MapObjDictionary[idx] = new KeyValuePair<int, List<MapPoint>>(this.MapObjDictionary[index].Key, value);
+                this.MapObjDictionary[index] = value;
             }
         }
 
-        public List<MapPoint> First() => this.MapObjDictionary[0].Value;
-        public int FirstObjectId() => this.MapObjDictionary[0].Key;
-        public void Remove(int index) => this.MapObjDictionary.RemoveAt(this.MapObjDictionary.FindIndex(kvp => kvp.Key == index));
+        public List<MapPoint> First() => this.MapObjDictionary[0];
+        public int FirstObjectId() => this.MapObjDictionary.First().Key;
+        public void Remove(int index) => this.MapObjDictionary.Remove(index);
 
         public void SwapMapObjects(int firstMapObjectIndex, int secondMapObjectIndex) {
             (this.MapObjDictionary[secondMapObjectIndex], this.MapObjDictionary[firstMapObjectIndex])
                 = (this.MapObjDictionary[firstMapObjectIndex], this.MapObjDictionary[secondMapObjectIndex]);
         }
 
-        public void SwapMapObjectsById(int firstMapObjectId, int secondMapObjectId) {
-            int firstMapObjectIndex = this.MapObjDictionary.FindIndex(kvp => kvp.Key == firstMapObjectId);
-            int secondMapObjectIndex = this.MapObjDictionary.FindIndex(kvp => kvp.Key == secondMapObjectId);
-            (this.MapObjDictionary[secondMapObjectIndex], this.MapObjDictionary[firstMapObjectIndex])
-                = (this.MapObjDictionary[firstMapObjectIndex], this.MapObjDictionary[secondMapObjectIndex]);
-        }
-
         public Object HasDuplicatedPoints(int objectIndex) {
-            var duplicates = this.MapObjDictionary[objectIndex - 1].Value
+            var duplicates = this.MapObjDictionary[objectIndex - 1]
                 .GroupBy(x => new { x.X, x.Y })
                 .Where(g => g.Count() > 1)
                 .Select(y => y.Key)

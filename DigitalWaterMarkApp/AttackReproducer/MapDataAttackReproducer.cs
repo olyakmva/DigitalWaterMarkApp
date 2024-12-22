@@ -16,7 +16,7 @@ namespace DigitalWaterMarkApp {
 
             if (!changeOriginal) {
                 mapData = new() {
-                    MapObjDictionary = new List<KeyValuePair<int, List<MapPoint>>>(mapData.MapObjDictionary),
+                    MapObjDictionary = new Dictionary<int, List<MapPoint>>(mapData.MapObjDictionary),
                     ColorName = mapData.ColorName.Copy()
                 };
             }
@@ -38,36 +38,36 @@ namespace DigitalWaterMarkApp {
         /// <summary>
         /// Атака путем перемешивания объектов внутри слоя карты
         /// </summary>
-        public static (double similiarObjectsPercentage, MapData shufflingMapData) ShuffleObjectsInMap(MapData mapData, bool changeOriginal = false) {
+        //public static (double similiarObjectsPercentage, MapData shufflingMapData) ShuffleObjectsInMap(MapData mapData, bool changeOriginal = false) {
 
-            if (!changeOriginal) {
-                mapData = new() {
-                    MapObjDictionary = new List<KeyValuePair<int, List<MapPoint>>>(mapData.MapObjDictionary),
-                    ColorName = mapData.ColorName.Copy()
-                };
-            }
+        //    if (!changeOriginal) {
+        //        mapData = new() {
+        //            MapObjDictionary = new List<KeyValuePair<int, List<MapPoint>>>(mapData.MapObjDictionary),
+        //            ColorName = mapData.ColorName.Copy()
+        //        };
+        //    }
 
-            var mapDataObjectIds = mapData.MapObjDictionary.Select(mapObject => mapObject.Key).ToList();
-            Random random = new(Guid.NewGuid().GetHashCode());
-            int n = mapData.ObjectsCount;
-            while (n-- > 1) {
-                int k = random.Next(n + 1);
-                mapData.SwapMapObjectsById(mapDataObjectIds[k], mapDataObjectIds[n]);
-            }
+        //    var mapDataObjectIds = mapData.MapObjDictionary.Select(mapObject => mapObject.Key).ToList();
+        //    Random random = new(Guid.NewGuid().GetHashCode());
+        //    int n = mapData.ObjectsCount;
+        //    while (n-- > 1) {
+        //        int k = random.Next(n + 1);
+        //        mapData.SwapMapObjectsById(mapDataObjectIds[k], mapDataObjectIds[n]);
+        //    }
 
-            float similiarObjectsCount = 0;
-            for (int i = 0; i < mapData.ObjectsCount; i++) {
-                var mapDataObjectId = mapData.MapObjDictionary[i].Key;
-                var shufflingMapDataObjectId = mapData.MapObjDictionary[i].Key;
+        //    float similiarObjectsCount = 0;
+        //    for (int i = 0; i < mapData.ObjectsCount; i++) {
+        //        var mapDataObjectId = mapData.MapObjDictionary[i].Key;
+        //        var shufflingMapDataObjectId = mapData.MapObjDictionary[i].Key;
 
-                if (mapDataObjectId == shufflingMapDataObjectId) {
-                    similiarObjectsCount++;
-                }
-            }
+        //        if (mapDataObjectId == shufflingMapDataObjectId) {
+        //            similiarObjectsCount++;
+        //        }
+        //    }
 
-            var similiarObjectsPercentage = Math.Round(similiarObjectsCount / (float) mapData.ObjectsCount * 100.0F, 2);
-            return (similiarObjectsPercentage, mapData);
-        }
+        //    var similiarObjectsPercentage = Math.Round(similiarObjectsCount / (float) mapData.ObjectsCount * 100.0F, 2);
+        //    return (similiarObjectsPercentage, mapData);
+        //}
 
     }
 
